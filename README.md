@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 📘 Stack Sage
 
 An intelligent Magic: The Gathering rules companion powered by retrieval-augmented generation (RAG).
@@ -42,7 +41,3 @@ stack-sage/
 “Every ruling, explained like you’re sitting across the table from a friendly Level 3 Judge.”
 
 Stack Sage aims to make Magic’s intricate rules accessible to players, judges, and developers alike — a bridge between human understanding and the logical beauty of the stack.
-=======
-# Stack_Sage
-An accessible, agentic RAG application for the average Magic: The Gathering player to query on card interactions, rules, and more to answer many complex questions. A helpful guide!
->>>>>>> 53501bcff086e76fefcd3a86e80de16204d6fbfd

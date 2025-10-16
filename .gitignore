@@ -53,6 +53,7 @@ htmlcov/
 
 # ChromaDB / Vector Store
 backend/data/chroma_db/
+backend/data/qdrant_storage/
 *.db
 
 # Logs

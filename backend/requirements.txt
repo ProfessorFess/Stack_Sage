@@ -8,6 +8,10 @@ chromadb==0.5.23
 openai==1.59.8
 anthropic==0.70.0
 
+# Document processing
+langchain-community==0.3.19
+pypdf==5.1.0
+
 # Utilities
 tiktoken==0.8.0
 requests==2.32.3

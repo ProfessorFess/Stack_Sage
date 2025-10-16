@@ -162,9 +162,9 @@ def extract_card_names(query: str) -> List[str]:
     quoted_matches = re.findall(quoted_pattern, query)
     card_names.extend(quoted_matches)
     
-    # Extract capitalized sequences (2+ capitalized words in a row)
-    # This catches things like "Rest in Peace", "Dockside Extortionist"
-    capitalized_pattern = r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b'
+    # Extract capitalized sequences (can include lowercase words like "of", "the", "in")
+    # This catches things like "Rest in Peace", "Wrath of God", "Dockside Extortionist"
+    capitalized_pattern = r'\b[A-Z][a-z]+(?:\s+(?:of|the|in|from|to|with|and|or)?\s*[A-Z][a-z]+)+\b'
     capitalized_matches = re.findall(capitalized_pattern, query)
     
     # Filter out common false positives

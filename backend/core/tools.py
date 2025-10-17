@@ -6,6 +6,7 @@ for answering Magic: The Gathering questions.
 """
 
 from typing import List, Optional
+from functools import lru_cache
 from langchain.tools import tool
 from langchain_core.documents import Document
 from backend.core.scryfall import ScryfallAPI, extract_card_names
@@ -14,9 +15,18 @@ from backend.core.config import config
 import requests
 
 
-# Initialize shared resources
+# Initialize shared resources (k=8 for better context coverage)
 _scryfall = ScryfallAPI()
-_retriever = MTGRetriever(k=5)
+_retriever = MTGRetriever(k=8)  # Increased from 5 to 8
+
+# Cached card lookup to avoid redundant API calls
+@lru_cache(maxsize=256)
+def _cached_card_fetch(card_name: str):
+    """
+    Cached card lookup to speed up repeated queries.
+    Uses LRU cache to store up to 256 most recent card lookups.
+    """
+    return _scryfall.fetch_card(card_name)
 
 
 @tool
@@ -41,7 +51,8 @@ def lookup_card(card_name: str) -> str:
         lookup_card("Rest in Peace")
         lookup_card("Lightning Bolt")
     """
-    card = _scryfall.fetch_card(card_name)
+    # Use cached fetch to avoid redundant API calls
+    card = _cached_card_fetch(card_name)
     
     if not card:
         return f"❌ Card '{card_name}' not found. Please check the spelling or try a different name."
@@ -50,7 +61,7 @@ def lookup_card(card_name: str) -> str:
 
 
 @tool
-def search_rules(query: str, num_results: int = 5) -> str:
+def search_rules(query: str, num_results: int = 8) -> str:
     """
     Search the Magic: The Gathering Comprehensive Rules.
     
@@ -60,7 +71,7 @@ def search_rules(query: str, num_results: int = 5) -> str:
     Args:
         query: The rules question or topic to search for (e.g., "stack resolution", 
                "state-based actions", "triggered abilities")
-        num_results: Number of relevant rule sections to return (default: 5)
+        num_results: Number of relevant rule sections to return (default: 8)
         
     Returns:
         Relevant sections from the Comprehensive Rules
@@ -70,9 +81,8 @@ def search_rules(query: str, num_results: int = 5) -> str:
         search_rules("replacement effects")
     """
     try:
-        # Update retriever k value if specified
-        retriever = MTGRetriever(k=num_results)
-        docs = retriever.get_relevant_documents(query)
+        # Reuse global retriever with dynamic k (no new instance created)
+        docs = _retriever.get_relevant_documents(query, k=num_results)
         
         if not docs:
             return f"❌ No rules found for query: '{query}'"
@@ -157,8 +167,8 @@ def check_format_legality(card_name: str, format_name: str = "commander") -> str
         check_format_legality("Black Lotus", "vintage")
         check_format_legality("Lightning Bolt", "standard")
     """
-    # Fetch card to get legalities
-    card_data = _scryfall.fetch_card(card_name)
+    # Fetch card to get legalities (using cache)
+    card_data = _cached_card_fetch(card_name)
     
     if not card_data:
         return f"❌ Card '{card_name}' not found."
@@ -222,8 +232,8 @@ def search_similar_rulings(card_name: str) -> str:
         search_similar_rulings("Rest in Peace")
         search_similar_rulings("Counterspell")
     """
-    # Get the card first
-    card = _scryfall.fetch_card(card_name)
+    # Get the card first (using cache)
+    card = _cached_card_fetch(card_name)
     
     if not card:
         return f"❌ Card '{card_name}' not found."
@@ -264,13 +274,12 @@ def search_similar_rulings(card_name: str) -> str:
     if "counter" in card.oracle_text.lower():
         queries.append("countering spells")
     
-    # Get related rules
+    # Get related rules (reuse global retriever)
     if queries:
         result += "Related Rules & Mechanics:\n\n"
-        retriever = MTGRetriever(k=3)
         
         for query in queries[:3]:  # Limit to 3 queries to avoid overwhelming
-            docs = retriever.get_relevant_documents(query)
+            docs = _retriever.get_relevant_documents(query, k=3)
             if docs:
                 result += f"--- {query.upper()} ---\n"
                 result += docs[0].page_content + "\n\n"
@@ -399,13 +408,13 @@ def cross_reference_rules(rule_topic1: str, rule_topic2: str) -> str:
     """
     result = "=== CROSS-REFERENCE ANALYSIS ===\n\n"
     
-    retriever = MTGRetriever(k=3)
+    # Reuse global retriever with k=3
     
     # Search for first topic
     result += f"{'='*60}\n"
     result += f"TOPIC 1: {rule_topic1.upper()}\n"
     result += f"{'='*60}\n"
-    docs1 = retriever.get_relevant_documents(rule_topic1)
+    docs1 = _retriever.get_relevant_documents(rule_topic1, k=3)
     if docs1:
         for i, doc in enumerate(docs1, 1):
             result += f"\n[{rule_topic1} - Result {i}]\n"
@@ -417,7 +426,7 @@ def cross_reference_rules(rule_topic1: str, rule_topic2: str) -> str:
     result += f"\n{'='*60}\n"
     result += f"TOPIC 2: {rule_topic2.upper()}\n"
     result += f"{'='*60}\n"
-    docs2 = retriever.get_relevant_documents(rule_topic2)
+    docs2 = _retriever.get_relevant_documents(rule_topic2, k=3)
     if docs2:
         for i, doc in enumerate(docs2, 1):
             result += f"\n[{rule_topic2} - Result {i}]\n"
@@ -430,7 +439,7 @@ def cross_reference_rules(rule_topic1: str, rule_topic2: str) -> str:
     result += "INTERACTION BETWEEN TOPICS\n"
     result += f"{'='*60}\n"
     interaction_query = f"{rule_topic1} and {rule_topic2} interaction"
-    docs_interaction = retriever.get_relevant_documents(interaction_query)
+    docs_interaction = _retriever.get_relevant_documents(interaction_query, k=3)
     if docs_interaction:
         result += f"\n[Combined Search]\n"
         result += docs_interaction[0].page_content + "\n"

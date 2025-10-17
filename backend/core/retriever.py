@@ -10,46 +10,80 @@ from backend.core.vector_store import initialize_vector_store
 class MTGRetriever:
     """Retriever for MTG Comprehensive Rules."""
     
-    def __init__(self, k: int = 5):
+    def __init__(self, k: int = 8):  # Increased from 5 to 8 for better coverage
         """
         Initialize the retriever.
         
         Args:
-            k: Number of results to retrieve
+            k: Number of results to retrieve (default: 8)
         """
         self.vector_store = initialize_vector_store()
-        self.k = k
-        # Get the retriever from the vector store
-        self.retriever = self.vector_store.vector_store.as_retriever(
-            search_kwargs={"k": k}
+        self._k = k
+        # Store the base retriever - we'll update k dynamically
+        self._retriever = None
+        self._update_retriever()
+    
+    @property
+    def k(self) -> int:
+        """Get current k value."""
+        return self._k
+    
+    @k.setter
+    def k(self, value: int):
+        """Set k value and update retriever if needed."""
+        if value != self._k:
+            self._k = value
+            self._update_retriever()
+    
+    def _update_retriever(self):
+        """Update the retriever with current k value."""
+        self._retriever = self.vector_store.vector_store.as_retriever(
+            search_kwargs={"k": self._k}
         )
     
-    def get_relevant_documents(self, query: str) -> List[Document]:
+    def get_relevant_documents(self, query: str, k: int = None) -> List[Document]:
         """
         Retrieve relevant documents for a query.
         
         Args:
             query: The query text
+            k: Optional override for number of results (uses self.k if not provided)
             
         Returns:
             List of relevant documents
         """
-        return self.retriever.invoke(query)
+        if k is not None and k != self._k:
+            # Temporarily update k for this query
+            old_k = self._k
+            self.k = k
+            results = self._retriever.invoke(query)
+            self.k = old_k  # Restore original k
+            return results
+        return self._retriever.invoke(query)
     
-    def get_relevant_documents_with_scores(self, query: str) -> List[tuple]:
+    def get_relevant_documents_with_scores(self, query: str, k: int = None, min_score: float = 0.0) -> List[tuple]:
         """
         Retrieve relevant documents with similarity scores.
         
         Args:
             query: The query text
+            k: Optional override for number of results (uses self.k if not provided)
+            min_score: Minimum similarity score threshold (0.0-1.0). Filters out low-relevance results.
             
         Returns:
-            List of (Document, score) tuples
+            List of (Document, score) tuples filtered by min_score
         """
-        return self.vector_store.search(query, k=self.k)
+        k_value = k if k is not None else self._k
+        results = self.vector_store.vector_store.similarity_search_with_score(query, k=k_value)
+        
+        # Filter by minimum score if specified
+        if min_score > 0.0:
+            results = [(doc, score) for doc, score in results if score >= min_score]
+        
+        return results
 
 
-def make_retriever(k: int = 5) -> MTGRetriever:
+def make_retriever(k: int = 8) -> MTGRetriever:
     """
     Create a retriever instance.
     

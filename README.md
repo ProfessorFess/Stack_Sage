@@ -1,29 +1,49 @@
 📘 Stack Sage
 
-An intelligent Magic: The Gathering rules companion powered by retrieval-augmented generation (RAG).
+An intelligent Magic: The Gathering rules companion powered by **agentic RAG** (Retrieval-Augmented Generation).
 
 Stack Sage is an AI-powered MTG rules assistant that can explain complex card interactions, stack resolutions, and game mechanics in plain language.
-By combining official Comprehensive Rules data with live card information from the Scryfall API, it reasons step-by-step through questions like:
+Using an **autonomous agent** with a specialized toolbelt, it dynamically decides how to answer your question — looking up cards, searching rules, checking format legality, and more.
 
-“What happens if I copy Dockside Extortionist with Spark Double?”
-“Does Rest in Peace stop Unearth?”
+"What happens if I copy Dockside Extortionist with Spark Double?"
+"Does Rest in Peace stop Unearth?"
+"Is Black Lotus legal in Commander?"
 
-Stack Sage retrieves the relevant cards and rule sections, interprets their relationships, and generates a clear, citation-backed explanation — just like a digital judge who never sleeps.
+Stack Sage autonomously retrieves the relevant information, reasons through complex interactions, and generates clear, citation-backed explanations — just like a digital judge who never sleeps.
+
+🤖 What Makes Stack Sage Agentic?
+
+Unlike traditional RAG pipelines that follow a fixed sequence, Stack Sage uses a **ReAct (Reasoning + Acting) agent** that:
+- **Analyzes** your question to understand what information is needed
+- **Decides** which tools to use (card lookup, rules search, legality checks, etc.)
+- **Reasons** through complex interactions step-by-step
+- **Verifies** its own answers for completeness
+- **Adapts** its approach based on your specific question
+
+→ See [AGENTIC_FEATURES.md](AGENTIC_FEATURES.md) for full details on the agentic system
 
 🧠 Core Features
-	•	RAG-Driven Reasoning — combines card data and rules text using a retrieval-augmented LLM pipeline.
-	•	Contextual Rule Retrieval — semantically searches the Comprehensive Rules by rule numbers and topics.
-	•	Dynamic Card Lookup — pulls up-to-date Oracle text and rulings from the Scryfall API.
-	•	Structured Explanations — outputs results with summaries, rule references, and reasoning steps.
-	•	CLI Interface (current phase) — query directly from your terminal:
-    •	Future Plans: FastAPI backend, React frontend, and “Judge Mode” for formal rule citations.
+	•	**Agentic Intelligence** — autonomous decision-making with 9 specialized tools
+	•	**Dynamic Tool Selection** — uses only what's needed for each question
+	•	**Advanced Card Search** — find cards by attributes (color, mana cost, P/T, format)
+	•	**Anti-Hallucination** — strict rules prevent making up card names or false information
+	•	**Self-Verification** — can evaluate and improve its own answers
+	•	RAG-Driven Reasoning — combines card data and rules text using retrieval-augmented LLM pipeline
+	•	Contextual Rule Retrieval — semantically searches the Comprehensive Rules
+	•	Dynamic Card Lookup — pulls up-to-date Oracle text and rulings from the Scryfall API
+	•	Format Legality Checks — verify cards in Standard, Modern, Commander, etc.
+	•	Web Search Integration — current meta trends and tournament results (optional)
+	•	CLI Interface (current phase) — query directly from your terminal
+    •	Future Plans: FastAPI backend, React frontend, and "Judge Mode" for formal rule citations
 
 ⚙️ Tech Stack
-Data: Scryfall API, Magic: The Gathering Comprehensive Rules
-Retrieval: ChromaDB (Vector Store), tiktoken (tokenizer)
-Reasoning: Some Compatible LLM (Undecided)
-Backend: Python (Expressed via CLI → FastAPI later)
-Frontend: React (Vite) [planned]
+**Agent Framework**: LangGraph (ReAct Agent with Tool Calling)
+**Data Sources**: Scryfall API, Magic: The Gathering Comprehensive Rules
+**Vector Store**: Qdrant (with OpenAI embeddings)
+**LLM**: OpenAI GPT-4 (configurable)
+**Tools**: 9 specialized MTG tools (card search, rules lookup, legality checks, meta search, etc.)
+**Backend**: Python (CLI → FastAPI later)
+**Frontend**: React (Vite) [planned]
 
 🧩 Project Structure
 stack-sage/

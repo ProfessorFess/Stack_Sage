@@ -100,13 +100,18 @@ def run_cli():
     while True:
         try:
             # Get user input
-            question = Prompt.ask(
-                "\n[bold cyan]🃏 Your question[/bold cyan]",
-                default=""
-            )
+            # Don't use default="" to avoid prompt disappearing when text is deleted
+            try:
+                question = Prompt.ask(
+                    "\n[bold cyan]🃏 Your question[/bold cyan]"
+                )
+            except EOFError:
+                # Handle Ctrl+D gracefully
+                console.print("\n\n[yellow]Goodbye! 👋[/yellow]\n")
+                break
             
             # Handle empty input
-            if not question.strip():
+            if not question or not question.strip():
                 continue
             
             # Handle special commands

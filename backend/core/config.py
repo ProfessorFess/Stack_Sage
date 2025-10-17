@@ -33,9 +33,16 @@ class Config:
     COHERE_API_KEY: Optional[str] = os.getenv("COHERE_API_KEY")
     HUGGINGFACE_API_KEY: Optional[str] = os.getenv("HUGGINGFACE_API_KEY")
     
+    # ============================================
+    # Search API Configuration
+    # ============================================
+    TAVILY_API_KEY: Optional[str] = os.getenv("TAVILY_API_KEY")
+    
     # LLM Settings
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4")
+    # Default to gpt-4o-mini (much cheaper than gpt-4, still excellent quality)
+    # Options: "gpt-4o-mini" (cheapest), "gpt-3.5-turbo" (cheap), "gpt-4" (expensive but best)
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o-mini")
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "2000"))
     

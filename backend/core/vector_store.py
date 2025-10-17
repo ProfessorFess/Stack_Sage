@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from langchain_qdrant import QdrantVectorStore
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 
@@ -20,23 +21,36 @@ class MTGVectorStore:
         self, 
         collection_name: str = "mtg_rules",
         embedding_model: str = "text-embedding-3-small",
-        use_local: bool = True
+        use_local: bool = True,
+        use_free_embeddings: bool = False  # Using OpenAI embeddings (high quality)
     ):
         """
         Initialize the vector store.
         
         Args:
             collection_name: Name of the Qdrant collection
-            embedding_model: OpenAI embedding model to use
+            embedding_model: Embedding model to use
             use_local: If True, uses local file-based storage
+            use_free_embeddings: If True, uses free HuggingFace embeddings instead of OpenAI
         """
         self.collection_name = collection_name
         
-        # Initialize embeddings
-        self.embeddings = OpenAIEmbeddings(
-            model=embedding_model,
-            openai_api_key=config.OPENAI_API_KEY
-        )
+        # Initialize embeddings (FREE local model by default)
+        if use_free_embeddings:
+            print(f"🆓 Using FREE local embeddings: {embedding_model}")
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name=embedding_model,
+                model_kwargs={'device': 'cpu'},  # Use CPU (no GPU needed)
+                encode_kwargs={'normalize_embeddings': True}
+            )
+            self.vector_size = 384  # all-MiniLM-L6-v2 produces 384-dim vectors
+        else:
+            print(f"💰 Using OpenAI embeddings: {embedding_model}")
+            self.embeddings = OpenAIEmbeddings(
+                model=embedding_model,
+                openai_api_key=config.OPENAI_API_KEY
+            )
+            self.vector_size = 1536  # OpenAI embeddings are 1536-dim
         
         # Initialize Qdrant client
         if use_local:
@@ -49,6 +63,9 @@ class MTGVectorStore:
             self.client = QdrantClient(url="http://localhost:6333")
             print("🌐 Connected to Qdrant server at http://localhost:6333")
         
+        # Check if collection exists and has wrong dimensions - delete if so
+        self._ensure_correct_dimensions()
+        
         # Create collection if it doesn't exist
         self._ensure_collection_exists()
         
@@ -59,6 +76,36 @@ class MTGVectorStore:
             embedding=self.embeddings,
         )
     
+    def _ensure_correct_dimensions(self):
+        """Check if existing collection has wrong dimensions and delete if needed."""
+        try:
+            collections = self.client.get_collections().collections
+            collection_names = [c.name for c in collections]
+            
+            if self.collection_name in collection_names:
+                # Get collection info
+                collection_info = self.client.get_collection(self.collection_name)
+                
+                # Check vector dimensions
+                if hasattr(collection_info.config, 'params') and hasattr(collection_info.config.params, 'vectors'):
+                    vectors_config = collection_info.config.params.vectors
+                    if hasattr(vectors_config, 'size'):
+                        existing_size = vectors_config.size
+                    elif isinstance(vectors_config, dict) and 'size' in vectors_config:
+                        existing_size = vectors_config['size']
+                    else:
+                        # Can't determine size, skip check
+                        return
+                    
+                    if existing_size != self.vector_size:
+                        print(f"⚠️  Collection has {existing_size} dimensions, but embeddings are {self.vector_size}-dimensional")
+                        print(f"🗑️  Deleting old collection to recreate with correct dimensions...")
+                        self.client.delete_collection(self.collection_name)
+                        print(f"✅ Old collection deleted")
+        except Exception as e:
+            # If there's any error checking, just continue - collection creation will handle it
+            print(f"Note: {e}")
+    
     def _ensure_collection_exists(self):
         """Create collection if it doesn't exist."""
         try:
@@ -68,7 +115,7 @@ class MTGVectorStore:
             if self.collection_name not in collection_names:
                 self.client.create_collection(
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                    vectors_config=VectorParams(size=self.vector_size, distance=Distance.COSINE),
                 )
                 print(f"✨ Created collection: {self.collection_name}")
             else:

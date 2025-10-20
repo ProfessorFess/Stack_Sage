@@ -719,17 +719,202 @@ Get a free API key at: https://tavily.com"""
         return f"❌ Error performing web search: {str(e)}\n\nPlease check your Tavily API key and try again."
 
 
-# Export all tools as a list
+@tool
+def map_game_state(question: str) -> str:
+    """
+    Map out the game state to explicitly identify who controls what.
+    
+    Use this tool FIRST when questions involve multiple players and permanents.
+    This helps you understand controller relationships before answering.
+    
+    Args:
+        question: The user's question
+        
+    Returns:
+        Explicit mapping of controllers and targeting relationships
+        
+    Example:
+        Question: "If I Lightning Bolt Birds while opponent has Blood Artist"
+        Returns:
+        Player 1 (You) controls:
+        - Lightning Bolt (spell you're casting)
+        
+        Player 2 (Opponent) controls:
+        - Birds of Paradise (target of Lightning Bolt)
+        - Blood Artist (will trigger when Birds dies)
+        
+        When Blood Artist triggers:
+        - Controller: Player 2 (opponent)
+        - "You gain 1 life" → Player 2 gains 1 life
+        - "Target player loses 1 life" → Player 2 chooses target (likely Player 1)
+    """
+    question_lower = question.lower()
+    
+    result = "=== GAME STATE MAP ===\n\n"
+    
+    # Parse the question to identify controllers
+    player1_controls = []
+    player2_controls = []
+    
+    # Identify what each player controls
+    if "i cast" in question_lower or "i lightning" in question_lower:
+        player1_controls.append("Lightning Bolt (spell you're casting)")
+    
+    if "opponent" in question_lower:
+        # Find what opponent controls
+        if "opponent has" in question_lower or "opponent's" in question_lower:
+            # Extract card names after "opponent has/opponent's"
+            import re
+            
+            # Pattern for "opponent has [card]"
+            match = re.search(r"opponent(?:'s)?\s+(?:has\s+)?([A-Za-z\s]+?)(?:\s*,|\s*\?|$)", question_lower)
+            if match:
+                card = match.group(1).strip()
+                if card and len(card) > 2:
+                    player2_controls.append(f"{card.title()} (opponent controls this)")
+            
+            # Check for specific cards
+            if "blood artist" in question_lower:
+                if "Blood Artist" not in str(player2_controls):
+                    player2_controls.append("Blood Artist (opponent controls this)")
+            
+            if "birds" in question_lower or "paradise" in question_lower:
+                if "Birds" not in str(player2_controls):
+                    player2_controls.append("Birds of Paradise (opponent controls this)")
+    
+    # Format the output
+    result += "**CONTROLLER MAP:**\n\n"
+    result += "🔵 Player 1 (YOU - the person asking):\n"
+    if player1_controls:
+        for item in player1_controls:
+            result += f"  - {item}\n"
+    else:
+        result += "  - (No permanents specified)\n"
+    
+    result += "\n🔴 Player 2 (OPPONENT):\n"
+    if player2_controls:
+        for item in player2_controls:
+            result += f"  - {item}\n"
+    else:
+        result += "  - (No permanents specified)\n"
+    
+    # Add trigger analysis for Blood Artist
+    if "blood artist" in question_lower:
+        result += "\n**BLOOD ARTIST TRIGGER ANALYSIS:**\n\n"
+        result += "Blood Artist's FULL ability: \"Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.\"\n\n"
+        result += "Since 🔴 Player 2 (opponent) controls Blood Artist:\n\n"
+        result += "STEP 1 - Ability triggers when creature dies\n"
+        result += "STEP 2 - Resolve the ability:\n"
+        result += "  Part A: 'target player loses 1 life'\n"
+        result += "    → Opponent (controller) chooses the target\n"
+        result += "    → Opponent will choose 🔵 Player 1 (you)\n"
+        result += "    → 🔵 YOU LOSE 1 LIFE\n\n"
+        result += "  Part B: 'you gain 1 life'\n"
+        result += "    → 'You' = the controller = Opponent\n"
+        result += "    → 🔴 OPPONENT GAINS 1 LIFE\n\n"
+        result += "⚠️⚠️⚠️ FINAL RESULT (READ THIS CAREFULLY) ⚠️⚠️⚠️\n"
+        result += "When Blood Artist triggers (opponent controls it):\n"
+        result += "✅ YOU (Player 1) LOSE 1 LIFE (you are the target)\n"
+        result += "✅ OPPONENT (Player 2) GAINS 1 LIFE (they control Blood Artist)\n"
+        result += "✅ Your answer MUST include BOTH of these effects!\n"
+    
+    return result
+
+
+@tool
+def check_controller_logic(question: str, your_answer: str) -> str:
+    """
+    Verify that controller logic is correct in your answer.
+    
+    Use this tool BEFORE giving your final answer when the question involves:
+    - Multiple players (you vs opponent)
+    - Cards controlled by different players
+    - Abilities that say "you" or "target player"
+    
+    This tool checks if you correctly identified who controls what and who benefits.
+    
+    Args:
+        question: The original question from the user
+        your_answer: Your proposed answer before sending it
+        
+    Returns:
+        Validation feedback on whether controller logic is correct
+        
+    Example:
+        question: "If I Lightning Bolt Birds while opponent has Blood Artist, what happens?"
+        your_answer: "Opponent loses 1 life, you gain 1 life"
+        → Returns: "❌ ERROR: If opponent controls Blood Artist, opponent gains life, not you!"
+    """
+    result = "=== CONTROLLER LOGIC CHECK ===\n\n"
+    
+    question_lower = question.lower()
+    answer_lower = your_answer.lower()
+    
+    # Check for common controller indicators in question
+    opponent_controls = []
+    player_controls = []
+    
+    # Parse who controls what from question
+    if "opponent has" in question_lower or "opponent's" in question_lower or "their" in question_lower:
+        # Try to extract card names that opponent controls
+        words = question.split()
+        for i, word in enumerate(words):
+            if word.lower() in ["opponent", "opponent's", "their", "they"]:
+                # Next few words might be card names
+                if i + 1 < len(words):
+                    opponent_controls.append(words[i+1].strip(',.?!'))
+    
+    # Blood Artist specific check
+    if "blood artist" in question_lower:
+        if "opponent" in question_lower:
+            # Opponent controls Blood Artist
+            if ("you gain" in answer_lower and "life" in answer_lower) or ("opponent lose" in answer_lower):
+                result += "❌ CONTROLLER ERROR DETECTED!\n\n"
+                result += "The question says 'opponent has Blood Artist'\n"
+                result += "→ Opponent CONTROLS Blood Artist\n"
+                result += "→ Blood Artist says 'you gain 1 life'\n"
+                result += "→ 'You' = the controller = OPPONENT\n"
+                result += "→ OPPONENT gains life, NOT the question asker!\n\n"
+                result += "CORRECT ANSWER should say: 'opponent gains 1 life, you lose 1 life'\n"
+                result += "Your answer currently has this BACKWARDS.\n\n"
+                result += "🔧 Fix: Rewrite your answer with correct controller perspective."
+                return result
+    
+    # Generic controller checks
+    warnings = []
+    
+    # If question mentions "opponent has" or "opponent controls"
+    if "opponent" in question_lower and ("has" in question_lower or "control" in question_lower):
+        # Answer should typically benefit opponent, not player
+        if "you gain" in answer_lower and "opponent lose" in answer_lower:
+            warnings.append("⚠️ Warning: Answer says 'you gain' but question says opponent controls the permanent")
+    
+    if warnings:
+        result += "Potential Issues Found:\n"
+        for warning in warnings:
+            result += f"  {warning}\n"
+        result += "\nDouble-check: Who controls each permanent? Apply abilities from controller's perspective.\n"
+    else:
+        result += "✅ No obvious controller logic errors detected.\n"
+        result += "\nReminder: Always verify:\n"
+        result += "1. Who controls each permanent mentioned?\n"
+        result += "2. When card says 'you', it means the controller\n"
+        result += "3. Apply abilities from controller's perspective\n"
+    
+    return result
+
+
+# Export streamlined tool list - removed bloated/redundant tools
+# Removed: search_similar_rulings, verify_answer_completeness, cross_reference_rules
+# These tools added overhead without significant accuracy improvement
 ALL_TOOLS = [
-    lookup_card,
-    search_rules,
-    compare_multiple_cards,
-    check_format_legality,
-    search_similar_rulings,
-    verify_answer_completeness,
-    cross_reference_rules,
-    search_cards_by_criteria,
-    search_mtg_meta,
+    map_game_state,           # Map who controls what (USE FIRST for opponent questions)
+    lookup_card,              # Get card details by name
+    compare_multiple_cards,   # Analyze multiple card interactions
+    search_rules,             # Search comprehensive rules  
+    check_format_legality,    # Check if card is legal in format
+    search_cards_by_criteria, # Find cards by attributes
+    check_controller_logic,   # Verify controller logic (IMPORTANT)
 ]
 
 

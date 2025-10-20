@@ -31,6 +31,10 @@ class Card:
             context += f"Mana Cost: {self.mana_cost}\n"
         context += f"Oracle Text: {self.oracle_text}\n"
         
+        # Add controller note if card text contains "you"
+        if "you" in self.oracle_text.lower():
+            context += f"⚠️ Note: 'You' in this card's text refers to this card's CONTROLLER\n"
+        
         if self.keywords:
             context += f"Keywords: {', '.join(self.keywords)}\n"
         

@@ -40,10 +40,10 @@ class Config:
     
     # LLM Settings
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai")
-    # Default to gpt-4o-mini (much cheaper than gpt-4, still excellent quality)
-    # Options: "gpt-4o-mini" (cheapest), "gpt-3.5-turbo" (cheap), "gpt-4" (expensive but best)
+    # Default to gpt-4o-mini for cost efficiency (17x cheaper than gpt-4o)
+    # Options: "gpt-4o-mini" (cheap, fast), "gpt-4o" (better reasoning), "gpt-3.5-turbo" (cheapest)
     LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.5"))
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "2000"))
     
     # ============================================

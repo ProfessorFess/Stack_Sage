@@ -172,14 +172,51 @@ class MTGVectorStore:
         print(f"🗑️  Deleted collection: {self.collection_name}")
 
 
-def initialize_vector_store() -> MTGVectorStore:
+def initialize_vector_store(force_rebuild: bool = False) -> MTGVectorStore:
     """
     Initialize and return a vector store instance.
     
+    Args:
+        force_rebuild: If True, rebuild index with improved chunking
+    
     Returns:
-        Configured MTGVectorStore instance
+        Configured MTGVectorStore instance with hybrid search support
     """
-    return MTGVectorStore(collection_name="mtg_rules")
+    store = MTGVectorStore(collection_name="mtg_rules")
+    
+    # Check if we should rebuild with improved chunking
+    if force_rebuild:
+        print("🔄 Rebuilding vector store with improved rule-aware chunking...")
+        from backend.core.document_loader import load_pdf
+        from backend.core.chunker import chunk_mtg_rules
+        
+        # Load the rules
+        docs = load_pdf()
+        full_text = "\n\n".join([doc.page_content for doc in docs])
+        
+        # Chunk with metadata
+        chunks = chunk_mtg_rules(full_text, chunk_size=800, chunk_overlap=150)
+        
+        print(f"✅ Created {len(chunks)} rule-aware chunks with metadata")
+        
+        # Delete old collection and recreate
+        try:
+            store.client.delete_collection("mtg_rules")
+            print(f"🗑️  Deleted old collection")
+        except:
+            pass
+        
+        # Recreate collection
+        store._ensure_collection_exists()
+        
+        # Add documents with metadata
+        texts = [chunk.page_content for chunk in chunks]
+        metadatas = [chunk.metadata for chunk in chunks]
+        
+        store.add_texts(texts, metadatas=metadatas)
+        print(f"✅ Added {len(chunks)} chunks with metadata to vector store")
+    
+    return store
 
 
 # Example usage / testing

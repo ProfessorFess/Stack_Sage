@@ -1,19 +1,19 @@
 question_id,difficulty,question_short,context_recall,faithfulness,factual_correctness(mode=f1),answer_relevancy,context_entity_recall,noise_sensitivity(mode=relevant),context_precision,overall_score,quality
-1,easy,What does Lightning Bolt do?,1.0,1.0,1.0,0.937,0.667,0.0,1.0,0.801,High
+1,easy,What does Lightning Bolt do?,1.0,1.0,1.0,0.759,0.667,0.0,1.0,0.775,High
 2,easy,What is the mana cost of Counterspell?,1.0,1.0,1.0,1.0,0.333,0.0,1.0,0.762,High
 3,easy,What type of card is Sol Ring?,1.0,1.0,0.5,1.0,0.5,0.0,1.0,0.714,High
-4,hard,"If my opponent controls Blood Artist, and one of m...",1.0,1.0,0.86,0.921,0.25,0.0,1.0,0.719,High
-5,hard,If my opponent has Doubling Season and I cast a pl...,1.0,0.667,0.57,0.815,0.5,0.333,1.0,0.698,Medium
-6,medium,How do Rest in Peace and Leyline of the Void inter...,0.75,1.0,0.67,0.913,0.667,0.375,1.0,0.768,High
-7,easy,If I cast Counterspell targeting my opponent's Lig...,1.0,0.0,0.67,0.959,0.5,0.0,1.0,0.59,Medium
-8,medium,Can I use Path to Exile on my own creature?,0.0,1.0,0.86,0.976,0.25,0.25,1.0,0.619,Medium
-9,medium,How does the stack work?,0.667,1.0,0.86,0.708,0.167,0.143,1.0,0.649,Medium
-10,medium,What are state-based actions?,0.5,0.667,0.77,0.866,0.0,0.167,1.0,0.567,Medium
-11,easy,What is first strike and how does it work?,0.5,1.0,0.29,0.754,0.25,0.75,1.0,0.649,Medium
-12,easy,Is Black Lotus legal in Vintage?,1.0,1.0,0.8,0.866,0.5,0.0,1.0,0.738,High
-13,easy,Can I play Counterspell in Standard?,0.5,1.0,0.6,0.958,0.667,0.2,1.0,0.704,High
-14,medium,What 2-mana blue counterspell is the most famous?,0.0,0.333,0.0,0.0,0.0,0.0,0.0,0.048,Low
-15,medium,What red creatures cost 3 red mana (no colorless m...,0.0,0.889,0.0,0.928,0.0,0.0,0.0,0.26,Low
-16,hard,If I control a creature with lifelink and deathtou...,0.667,0.0,0.62,0.931,0.143,0.0,1.0,0.48,Low
-17,medium,Can I respond to someone casting a spell?,0.5,0.333,0.67,0.866,0.0,0.0,1.0,0.481,Low
-18,hard,What happens if two players would simultaneously l...,1.0,0.5,0.0,0.934,0.5,0.0,1.0,0.562,Medium
+4,hard,"If my opponent controls Blood Artist, and one of m...",1.0,1.0,0.86,0.926,1.0,0.333,1.0,0.874,High
+5,hard,If my opponent has Doubling Season and I cast a pl...,1.0,0.667,0.0,0.817,0.5,0.4,1.0,0.626,Medium
+6,medium,How do Rest in Peace and Leyline of the Void inter...,0.75,1.0,0.6,0.913,0.667,0.375,1.0,0.758,High
+7,easy,If I cast Counterspell targeting my opponent's Lig...,1.0,0.0,0.86,0.951,0.5,0.0,1.0,0.616,Medium
+8,medium,Can I use Path to Exile on my own creature?,1.0,1.0,0.86,0.976,0.25,0.25,1.0,0.762,High
+9,medium,How does the stack work?,1.0,0.667,0.92,0.708,0.167,0.222,1.0,0.669,Medium
+10,medium,What are state-based actions?,0.5,0.714,0.5,0.865,0.0,0.333,1.0,0.559,Medium
+11,easy,What is first strike and how does it work?,0.5,1.0,0.5,0.704,0.25,0.667,1.0,0.66,Medium
+12,easy,Is Black Lotus legal in Vintage?,1.0,1.0,0.8,0.843,0.5,0.0,1.0,0.735,High
+13,easy,Can I play Counterspell in Standard?,0.5,1.0,0.67,0.958,0.667,0.2,1.0,0.714,High
+14,medium,What 2-mana blue counterspell is the most famous?,0.0,0.0,0.5,0.945,0.0,0.0,0.0,0.206,Low
+15,medium,What red creatures cost 3 red mana (no colorless m...,0.0,0.875,0.0,0.88,0.0,0.0,0.0,0.251,Low
+16,hard,If I control a creature with lifelink and deathtou...,0.667,0.286,0.67,0.932,0.286,0.143,1.0,0.569,Medium
+17,medium,Can I respond to someone casting a spell?,1.0,0.667,0.67,0.919,0.0,0.0,1.0,0.608,Medium
+18,hard,What happens if two players would simultaneously l...,1.0,0.667,0.0,0.934,0.0,0.0,1.0,0.514,Medium

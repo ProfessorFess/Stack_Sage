@@ -47,10 +47,18 @@ def create_mtg_agent(use_better_model=False):
 - map_game_state: Map who controls what (USE FIRST for opponent questions!)
 - lookup_card: Get card details
 - compare_multiple_cards: Analyze interactions (use when 2+ cards involved)
-- search_rules: Search comprehensive rules
+- search_rules: Search comprehensive rules (vector search - good for concepts)
+- search_rules_bm25: Search rules with keyword matching (excellent for exact terms)
+- search_rules_hybrid: Search rules with combined vector + keyword search (best overall)
 - check_format_legality: Check card legality
 - search_cards_by_criteria: Find cards by attributes (use mana_cost for exact mana symbols)
 - check_controller_logic: Verify your answer
+
+**Search Strategy:**
+- search_rules: Use for conceptual questions (e.g., "how does the stack work?")
+- search_rules_bm25: Use for exact keywords/rule numbers (e.g., "rule 405", "state-based actions")
+- search_rules_hybrid: Use for complex queries needing both concepts and exact matches
+- Start with hybrid search for best results, fall back to specific methods if needed
 
 **Using search_cards_by_criteria:**
 - For "what cards cost X mana": Use mana_value (CMC)

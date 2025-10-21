@@ -11,6 +11,7 @@ from langchain.tools import tool
 from langchain_core.documents import Document
 from backend.core.scryfall import ScryfallAPI, extract_card_names
 from backend.core.retriever import MTGRetriever
+from backend.core.bm25_retriever import make_bm25_retriever, make_hybrid_retriever
 from backend.core.config import config
 import requests
 
@@ -18,6 +19,24 @@ import requests
 # Initialize shared resources (k=6 balances coverage vs noise)
 _scryfall = ScryfallAPI()
 _retriever = MTGRetriever(k=6)  # Reduced from 8 to minimize noise
+
+# Initialize BM25 and hybrid retrievers (lazy loading)
+_bm25_retriever = None
+_hybrid_retriever = None
+
+def _get_bm25_retriever():
+    """Get or create BM25 retriever instance."""
+    global _bm25_retriever
+    if _bm25_retriever is None:
+        _bm25_retriever = make_bm25_retriever(k=6)
+    return _bm25_retriever
+
+def _get_hybrid_retriever():
+    """Get or create hybrid retriever instance."""
+    global _hybrid_retriever
+    if _hybrid_retriever is None:
+        _hybrid_retriever = make_hybrid_retriever(k=6)
+    return _hybrid_retriever
 
 # Cached card lookup to avoid redundant API calls
 @lru_cache(maxsize=256)
@@ -95,6 +114,74 @@ def search_rules(query: str, num_results: int = 6) -> str:
         return result
     except Exception as e:
         return f"❌ Error searching rules: {str(e)}"
+
+
+@tool
+def search_rules_bm25(query: str, num_results: int = 6) -> str:
+    """
+    Search the Magic: The Gathering Comprehensive Rules using BM25 keyword matching.
+    
+    BM25 is excellent for exact keyword matches and specific rule references.
+    Use this when you need precise keyword matching or when vector search isn't finding specific terms.
+    
+    Args:
+        query: The search query (keywords work best)
+        num_results: Number of relevant rule sections to return (default: 6)
+        
+    Returns:
+        Formatted string with relevant rule sections
+    """
+    try:
+        bm25_retriever = _get_bm25_retriever()
+        results = bm25_retriever.get_relevant_documents_with_scores(query, k=num_results)
+        
+        if not results:
+            return "No relevant rules found for your query."
+        
+        formatted_results = []
+        for i, (doc, score) in enumerate(results, 1):
+            content = doc.page_content.strip()
+            if content:
+                formatted_results.append(f"**Result {i}** (BM25 Score: {score:.3f}):\n{content}\n")
+        
+        return "\n".join(formatted_results)
+        
+    except Exception as e:
+        return f"Error searching rules with BM25: {str(e)}"
+
+
+@tool
+def search_rules_hybrid(query: str, num_results: int = 6) -> str:
+    """
+    Search the Magic: The Gathering Comprehensive Rules using hybrid search (vector + BM25).
+    
+    This combines semantic understanding with keyword precision for the best results.
+    Use this for complex queries that need both conceptual understanding and exact matches.
+    
+    Args:
+        query: The search query
+        num_results: Number of relevant rule sections to return (default: 6)
+        
+    Returns:
+        Formatted string with relevant rule sections
+    """
+    try:
+        hybrid_retriever = _get_hybrid_retriever()
+        results = hybrid_retriever.get_relevant_documents_with_scores(query, k=num_results)
+        
+        if not results:
+            return "No relevant rules found for your query."
+        
+        formatted_results = []
+        for i, (doc, score) in enumerate(results, 1):
+            content = doc.page_content.strip()
+            if content:
+                formatted_results.append(f"**Result {i}** (Hybrid Score: {score:.3f}):\n{content}\n")
+        
+        return "\n".join(formatted_results)
+        
+    except Exception as e:
+        return f"Error searching rules with hybrid search: {str(e)}"
 
 
 @tool

@@ -29,10 +29,10 @@ def create_mtg_agent(use_better_model=False):
     # Use GPT-4o for complex controller questions, otherwise use default
     model = "gpt-4o" if use_better_model else config.LLM_MODEL
     
-    # Initialize the LLM with moderate temperature for better reasoning
+    # Initialize the LLM with lower temperature for consistency and accuracy
     llm = ChatOpenAI(
         model=model,
-        temperature=0.5,  # Moderate temperature balances creativity and consistency
+        temperature=0.3,  # Lower temperature reduces hallucinations, improves faithfulness
         openai_api_key=config.OPENAI_API_KEY
     )
     
@@ -63,7 +63,13 @@ def create_mtg_agent(use_better_model=False):
 - If opponent controls Blood Artist, OPPONENT gains life and OPPONENT chooses who loses life
 - Blood Artist controller will target the other player (you) with the "loses 1 life" effect
 
-Always use map_game_state first to understand controller relationships."""),
+Always use map_game_state first to understand controller relationships.
+
+**Response Guidelines:**
+- Answer directly and concisely
+- Use ONLY information from your tools - never guess or use outside knowledge
+- Focus on relevant details, ignore metadata (artist, prices, set info)
+- State the answer first, then explain if needed"""),
         ("placeholder", "{messages}"),
     ])
     

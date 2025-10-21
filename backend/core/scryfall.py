@@ -40,7 +40,7 @@ class Card:
         
         if self.rulings:
             context += f"\nRulings:\n"
-            for i, ruling in enumerate(self.rulings[:3], 1):  # Limit to 3 rulings
+            for i, ruling in enumerate(self.rulings[:2], 1):  # Limit to 2 rulings to reduce noise
                 context += f"  {i}. {ruling}\n"
         
         return context

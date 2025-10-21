@@ -35,13 +35,10 @@ class Card:
         if "you" in self.oracle_text.lower():
             context += f"⚠️ Note: 'You' in this card's text refers to this card's CONTROLLER\n"
         
-        if self.keywords:
-            context += f"Keywords: {', '.join(self.keywords)}\n"
+        # Keywords removed - adds noise without adding value for most questions
         
         if self.rulings:
-            context += f"\nRulings:\n"
-            for i, ruling in enumerate(self.rulings[:2], 1):  # Limit to 2 rulings to reduce noise
-                context += f"  {i}. {ruling}\n"
+            context += f"\nRuling: {self.rulings[0]}\n"  # Only most relevant ruling to minimize noise
         
         return context
 
@@ -171,11 +168,20 @@ def extract_card_names(query: str) -> List[str]:
     capitalized_pattern = r'\b[A-Z][a-z]+(?:\s+(?:of|the|in|from|to|with|and|or)?\s*[A-Z][a-z]+)+\b'
     capitalized_matches = re.findall(capitalized_pattern, query)
     
+    # Also extract single capitalized words (like "Counterspell", "Bolt")
+    # But only if they're 4+ characters to avoid false positives like "The", "And"
+    single_cap_pattern = r'\b[A-Z][a-z]{3,}\b'
+    single_cap_matches = re.findall(single_cap_pattern, query)
+    
     # Filter out common false positives
-    false_positives = {'Magic The Gathering', 'The Stack', 'The Battlefield'}
+    false_positives = {'Magic', 'The', 'Gathering', 'Stack', 'Battlefield', 'Player', 'Opponent', 
+                       'Controller', 'Standard', 'Modern', 'Commander', 'Legacy', 'Vintage', 
+                       'Pioneer', 'Pauper', 'What', 'When', 'Where', 'Does', 'Have', 'Would'}
     capitalized_matches = [m for m in capitalized_matches if m not in false_positives]
+    single_cap_matches = [m for m in single_cap_matches if m not in false_positives]
     
     card_names.extend(capitalized_matches)
+    card_names.extend(single_cap_matches)
     
     # Remove duplicates while preserving order
     seen = set()

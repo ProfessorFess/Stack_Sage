@@ -15,9 +15,9 @@ from backend.core.config import config
 import requests
 
 
-# Initialize shared resources (k=8 for better context coverage)
+# Initialize shared resources (k=6 balances coverage vs noise)
 _scryfall = ScryfallAPI()
-_retriever = MTGRetriever(k=8)  # Increased from 5 to 8
+_retriever = MTGRetriever(k=6)  # Reduced from 8 to minimize noise
 
 # Cached card lookup to avoid redundant API calls
 @lru_cache(maxsize=256)
@@ -61,7 +61,7 @@ def lookup_card(card_name: str) -> str:
 
 
 @tool
-def search_rules(query: str, num_results: int = 8) -> str:
+def search_rules(query: str, num_results: int = 6) -> str:
     """
     Search the Magic: The Gathering Comprehensive Rules.
     
@@ -71,7 +71,7 @@ def search_rules(query: str, num_results: int = 8) -> str:
     Args:
         query: The rules question or topic to search for (e.g., "stack resolution", 
                "state-based actions", "triggered abilities")
-        num_results: Number of relevant rule sections to return (default: 8)
+        num_results: Number of relevant rule sections to return (default: 6)
         
     Returns:
         Relevant sections from the Comprehensive Rules
@@ -463,6 +463,7 @@ def cross_reference_rules(rule_topic1: str, rule_topic2: str) -> str:
 def search_cards_by_criteria(
     colors: str = "",
     mana_value: str = "",
+    mana_cost: str = "",
     power: str = "",
     toughness: str = "",
     format_legal: str = "",
@@ -482,6 +483,9 @@ def search_cards_by_criteria(
         colors: Color identity - "w" (white), "u" (blue), "b" (black), "r" (red), 
                 "g" (green), "c" (colorless). Can combine: "ur" for blue/red
         mana_value: Converted mana cost. Use numbers or comparisons: "3", "<=2", ">=4"
+        mana_cost: EXACT mana cost using Scryfall notation. Use for specific mana requirements.
+                  Examples: "{R}{R}{R}" for 3 red, "{U}{U}" for 2 blue, "{2}{G}{G}" for 2 generic + 2 green.
+                  Use this when question specifies exact mana symbols (e.g., "3 red mana" = "{R}{R}{R}")
         power: Power value. Use numbers or comparisons: "3", ">=5", "*"
         toughness: Toughness value. Use numbers or comparisons: "3", ">=5", "*"
         format_legal: Format where card must be legal: "standard", "modern", "commander", 
@@ -516,6 +520,9 @@ def search_cards_by_criteria(
             query_parts.append(f"c:{colors}")
         if mana_value:
             query_parts.append(f"mv{mana_value}" if any(op in mana_value for op in ['<', '>', '=']) else f"mv={mana_value}")
+        if mana_cost:
+            # Exact mana cost search (e.g., m:{R}{R}{R})
+            query_parts.append(f"m:{mana_cost}")
         if power:
             query_parts.append(f"pow{power}" if any(op in power for op in ['<', '>', '=']) else f"pow={power}")
         if toughness:

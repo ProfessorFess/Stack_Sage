@@ -1,0 +1,370 @@
+/Users/professormyhre/projects/Stack_Sage/backend/core/ragasEvaluate.py:247: DeprecationWarning: LangchainLLMWrapper is deprecated and will be removed in a future version. Use the modern LLM providers instead: from ragas.llms.base import llm_factory; llm = llm_factory('gpt-4o-mini') or from ragas.llms.base import instructor_llm_factory; llm = instructor_llm_factory('openai', client=openai_client)
+  evaluator_llm = LangchainLLMWrapper(
+/Users/professormyhre/projects/Stack_Sage/backend/core/ragasEvaluate.py:256: DeprecationWarning: LangchainEmbeddingsWrapper is deprecated and will be removed in a future version. Use the modern embedding providers instead: embedding_factory('openai', model='text-embedding-3-small', client=openai_client) or from ragas.embeddings import OpenAIEmbeddings, GoogleEmbeddings, HuggingFaceEmbeddings
+  evaluator_embeddings = LangchainEmbeddingsWrapper(
+💰 Using OpenAI embeddings: text-embedding-3-small
+📂 Using local Qdrant at: /Users/professormyhre/projects/Stack_Sage/backend/data/qdrant_storage
+✓ Collection 'mtg_rules' already exists
+
+================================================================================
+🧪 RAGAS EVALUATION - STACK SAGE RAG PIPELINE
+================================================================================
+
+📊 Running 18 test questions...
+
+
+[1/18] Difficulty: EASY
+
+🤔 Processing: What does Lightning Bolt do?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[2/18] Difficulty: EASY
+
+🤔 Processing: What is the mana cost of Counterspell?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[3/18] Difficulty: EASY
+
+🤔 Processing: What type of card is Sol Ring?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[4/18] Difficulty: HARD
+
+🤔 Processing: If my opponent controls Blood Artist, and one of my creature...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[5/18] Difficulty: HARD
+
+🤔 Processing: If my opponent has Doubling Season and I cast a planeswalker...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[6/18] Difficulty: MEDIUM
+
+🤔 Processing: How do Rest in Peace and Leyline of the Void interact?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[7/18] Difficulty: EASY
+
+🤔 Processing: If I cast Counterspell targeting my opponent's Lightning Bol...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[8/18] Difficulty: MEDIUM
+
+🤔 Processing: Can I use Path to Exile on my own creature?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[9/18] Difficulty: MEDIUM
+
+🤔 Processing: How does the stack work?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[10/18] Difficulty: MEDIUM
+
+🤔 Processing: What are state-based actions?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[11/18] Difficulty: EASY
+
+🤔 Processing: What is first strike and how does it work?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[12/18] Difficulty: EASY
+
+🤔 Processing: Is Black Lotus legal in Vintage?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[13/18] Difficulty: EASY
+
+🤔 Processing: Can I play Counterspell in Standard?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[14/18] Difficulty: MEDIUM
+
+🤔 Processing: What 2-mana blue counterspell is the most famous?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[15/18] Difficulty: MEDIUM
+
+🤔 Processing: What red creatures cost 3 red mana (no colorless mana)?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[16/18] Difficulty: HARD
+
+🤔 Processing: If I control a creature with lifelink and deathtouch, and it...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[17/18] Difficulty: MEDIUM
+
+🤔 Processing: Can I respond to someone casting a spell?...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+[18/18] Difficulty: HARD
+
+🤔 Processing: What happens if two players would simultaneously lose the ga...
+❌ Error processing question: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['messages', 'remaining_steps']\nNote: if you intended {R} to be part of the string and not a variable, please escape it with double curly braces like: '{{R}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+✅ Completed
+
+================================================================================
+✅ Dataset created with 18 samples
+================================================================================
+
+================================================================================
+⚙️  CONFIGURING EVALUATION METRICS
+================================================================================
+
+📋 Metrics configured:
+  - LLMContextRecall
+  - Faithfulness
+  - FactualCorrectness
+  - ResponseRelevancy
+  - ContextEntityRecall
+  - NoiseSensitivity
+
+================================================================================
+🚀 RUNNING EVALUATION
+================================================================================
+
+This may take several minutes...
+
+Evaluating:   0%|          | 0/108 [00:00<?, ?it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:   1%|          | 1/108 [00:02<04:10,  2.34s/it]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:   2%|▏         | 2/108 [00:06<06:25,  3.64s/it]Evaluating:   4%|▎         | 4/108 [00:07<02:52,  1.66s/it]Evaluating:   6%|▋         | 7/108 [00:08<01:21,  1.24it/s]Evaluating:   7%|▋         | 8/108 [00:09<01:21,  1.23it/s]Evaluating:   8%|▊         | 9/108 [00:09<01:07,  1.47it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:   9%|▉         | 10/108 [00:11<01:33,  1.05it/s]Evaluating:  10%|█         | 11/108 [00:13<01:54,  1.18s/it]Evaluating:  11%|█         | 12/108 [00:14<02:01,  1.26s/it]Evaluating:  13%|█▎        | 14/108 [00:14<01:11,  1.32it/s]Evaluating:  15%|█▍        | 16/108 [00:15<00:55,  1.65it/s]Evaluating:  17%|█▋        | 18/108 [00:15<00:38,  2.32it/s]Evaluating:  18%|█▊        | 19/108 [00:15<00:34,  2.55it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  19%|█▊        | 20/108 [00:17<01:06,  1.32it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  19%|█▉        | 21/108 [00:20<01:47,  1.24s/it]Evaluating:  20%|██        | 22/108 [00:21<01:46,  1.24s/it]Evaluating:  23%|██▎       | 25/108 [00:22<00:56,  1.47it/s]Evaluating:  24%|██▍       | 26/108 [00:22<00:52,  1.55it/s]Evaluating:  25%|██▌       | 27/108 [00:23<00:45,  1.79it/s]Evaluating:  26%|██▌       | 28/108 [00:24<00:57,  1.40it/s]Evaluating:  27%|██▋       | 29/108 [00:25<01:12,  1.09it/s]Evaluating:  29%|██▊       | 31/108 [00:27<01:09,  1.11it/s]Evaluating:  31%|███       | 33/108 [00:28<00:56,  1.32it/s]Evaluating:  31%|███▏      | 34/108 [00:30<01:13,  1.01it/s]Evaluating:  32%|███▏      | 35/108 [00:31<01:12,  1.00it/s]Evaluating:  33%|███▎      | 36/108 [00:32<01:07,  1.07it/s]Evaluating:  34%|███▍      | 37/108 [00:32<00:58,  1.21it/s]Evaluating:  35%|███▌      | 38/108 [00:33<00:46,  1.49it/s]Evaluating:  36%|███▌      | 39/108 [00:33<00:49,  1.40it/s]Evaluating:  37%|███▋      | 40/108 [00:36<01:15,  1.11s/it]Evaluating:  40%|███▉      | 43/108 [00:37<00:51,  1.27it/s]Evaluating:  42%|████▏     | 45/108 [00:37<00:35,  1.78it/s]Evaluating:  43%|████▎     | 46/108 [00:38<00:34,  1.82it/s]Evaluating:  44%|████▎     | 47/108 [00:39<00:39,  1.53it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  45%|████▌     | 49/108 [00:40<00:33,  1.77it/s]Evaluating:  46%|████▋     | 50/108 [00:43<01:00,  1.04s/it]Evaluating:  48%|████▊     | 52/108 [00:43<00:38,  1.44it/s]Evaluating:  49%|████▉     | 53/108 [00:43<00:33,  1.67it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  50%|█████     | 54/108 [00:44<00:42,  1.26it/s]Evaluating:  51%|█████     | 55/108 [00:46<00:51,  1.03it/s]Evaluating:  53%|█████▎    | 57/108 [00:47<00:37,  1.38it/s]Evaluating:  54%|█████▎    | 58/108 [00:47<00:31,  1.61it/s]Evaluating:  55%|█████▍    | 59/108 [00:48<00:29,  1.69it/s]Evaluating:  56%|█████▋    | 61/108 [00:49<00:29,  1.59it/s]Evaluating:  57%|█████▋    | 62/108 [00:50<00:32,  1.39it/s]Evaluating:  58%|█████▊    | 63/108 [00:51<00:35,  1.27it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  59%|█████▉    | 64/108 [00:52<00:36,  1.21it/s]Evaluating:  60%|██████    | 65/108 [00:54<00:49,  1.15s/it]Evaluating:  63%|██████▎   | 68/108 [00:55<00:28,  1.40it/s]Evaluating:  64%|██████▍   | 69/108 [00:55<00:26,  1.48it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  66%|██████▌   | 71/108 [00:57<00:29,  1.27it/s]Evaluating:  68%|██████▊   | 73/108 [00:59<00:27,  1.28it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  70%|███████   | 76/108 [01:02<00:26,  1.19it/s]Evaluating:  71%|███████▏  | 77/108 [01:05<00:37,  1.21s/it]Evaluating:  73%|███████▎  | 79/108 [01:05<00:26,  1.11it/s]Evaluating:  75%|███████▌  | 81/108 [01:06<00:19,  1.37it/s]Evaluating:  76%|███████▌  | 82/108 [01:07<00:20,  1.27it/s]Evaluating:  77%|███████▋  | 83/108 [01:08<00:22,  1.13it/s]Evaluating:  78%|███████▊  | 84/108 [01:09<00:23,  1.03it/s]Evaluating:  80%|███████▉  | 86/108 [01:10<00:13,  1.57it/s]Evaluating:  81%|████████  | 87/108 [01:11<00:16,  1.28it/s]Evaluating:  81%|████████▏ | 88/108 [01:11<00:13,  1.52it/s]Evaluating:  82%|████████▏ | 89/108 [01:12<00:11,  1.62it/s]LLM returned 1 generations instead of requested 3. Proceeding with 1 generations.
+Evaluating:  84%|████████▍ | 91/108 [01:14<00:14,  1.16it/s]Evaluating:  85%|████████▌ | 92/108 [01:17<00:22,  1.39s/it]Evaluating:  89%|████████▉ | 96/108 [01:20<00:10,  1.10it/s]Evaluating:  93%|█████████▎| 100/108 [01:20<00:04,  1.71it/s]Evaluating:  94%|█████████▎| 101/108 [01:23<00:05,  1.20it/s]Evaluating:  94%|█████████▍| 102/108 [01:24<00:06,  1.00s/it]Evaluating:  95%|█████████▌| 103/108 [01:26<00:05,  1.04s/it]Evaluating:  96%|█████████▋| 104/108 [01:26<00:03,  1.08it/s]Evaluating:  97%|█████████▋| 105/108 [01:31<00:05,  1.82s/it]Evaluating:  98%|█████████▊| 106/108 [01:32<00:03,  1.57s/it]Evaluating:  99%|█████████▉| 107/108 [01:35<00:01,  1.89s/it]Evaluating: 100%|██████████| 108/108 [01:35<00:00,  1.44s/it]Evaluating: 100%|██████████| 108/108 [01:35<00:00,  1.13it/s]
+
+================================================================================
+📊 EVALUATION RESULTS
+================================================================================
+
+🎯 AGGREGATE METRICS:
+--------------------------------------------------------------------------------
+  context_recall                : 0.028
+  faithfulness                  : 0.000
+  factual_correctness(mode=f1)  : 0.000
+  answer_relevancy              : 0.059
+  context_entity_recall         : 0.000
+  noise_sensitivity(mode=relevant): 0.000
+
+================================================================================
+📝 PER-QUESTION RESULTS:
+================================================================================
+
+[Q1] What does Lightning Bolt do?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.082
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q2] What is the mana cost of Counterspell?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.094
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q3] What type of card is Sol Ring?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.000
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q4] If my opponent controls Blood Artist, and one of my creatures dies, wh...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.047
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q5] If my opponent has Doubling Season and I cast a planeswalker, does it ...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.000
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q6] How do Rest in Peace and Leyline of the Void interact?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.060
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q7] If I cast Counterspell targeting my opponent's Lightning Bolt, what ha...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.078
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q8] Can I use Path to Exile on my own creature?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.035
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q9] How does the stack work?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.099
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q10] What are state-based actions?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.087
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q11] What is first strike and how does it work?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.058
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q12] Is Black Lotus legal in Vintage?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.041
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q13] Can I play Counterspell in Standard?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.500
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.046
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q14] What 2-mana blue counterspell is the most famous?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.000
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q15] What red creatures cost 3 red mana (no colorless mana)?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.000
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q16] If I control a creature with lifelink and deathtouch, and it's blocked...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.085
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q17] Can I respond to someone casting a spell?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.186
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+[Q18] What happens if two players would simultaneously lose the game?...
+  Response: Error: "Input to ChatPromptTemplate is missing variables {'R'}.  Expected: ['R'] Received: ['message...
+  Scores:
+    - context_recall              : 0.000
+    - faithfulness                : 0.000
+    - factual_correctness(mode=f1): 0.000
+    - answer_relevancy            : 0.063
+    - context_entity_recall       : 0.000
+    - noise_sensitivity(mode=relevant): 0.000
+
+================================================================================
+📈 SUMMARY STATISTICS
+================================================================================
+
+  Total Questions Evaluated: 18
+
+  Quality Distribution:
+    - High Quality (>0.7):   0 questions (0.0%)
+    - Medium Quality (0.5-0.7): 0 questions (0.0%)
+    - Low Quality (<0.5):    18 questions (100.0%)
+
+================================================================================
+✅ EVALUATION COMPLETE
+================================================================================

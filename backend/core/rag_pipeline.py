@@ -29,10 +29,10 @@ def create_mtg_agent(use_better_model=False):
     # Use GPT-4o for complex controller questions, otherwise use default
     model = "gpt-4o" if use_better_model else config.LLM_MODEL
     
-    # Initialize the LLM with lower temperature for consistency and accuracy
+    # Initialize the LLM with very low temperature for maximum consistency
     llm = ChatOpenAI(
         model=model,
-        temperature=0.3,  # Lower temperature reduces hallucinations, improves faithfulness
+        temperature=0.1,  # Very low temperature - highly deterministic, minimal hallucination
         openai_api_key=config.OPENAI_API_KEY
     )
     
@@ -49,8 +49,18 @@ def create_mtg_agent(use_better_model=False):
 - compare_multiple_cards: Analyze interactions (use when 2+ cards involved)
 - search_rules: Search comprehensive rules
 - check_format_legality: Check card legality
-- search_cards_by_criteria: Find cards by attributes
+- search_cards_by_criteria: Find cards by attributes (use mana_cost for exact mana symbols)
 - check_controller_logic: Verify your answer
+
+**Using search_cards_by_criteria:**
+- For "what cards cost X mana": Use mana_value (CMC)
+- For "what cards cost X red mana" or specific symbols: Use mana_cost="{{R}}{{R}}{{R}}"
+- Example: "3 red mana, no colorless" = mana_cost="{{R}}{{R}}{{R}}"
+
+**For multi-card questions:**
+If question mentions 2+ cards (e.g., "How do X and Y interact?"):
+1. Use compare_multiple_cards with all card names
+2. This ensures all entities are retrieved for complete context
 
 **MANDATORY WORKFLOW for "opponent" questions:**
 1. Call map_game_state(question) FIRST - this shows who controls what
@@ -66,10 +76,15 @@ def create_mtg_agent(use_better_model=False):
 Always use map_game_state first to understand controller relationships.
 
 **Response Guidelines:**
-- Answer directly and concisely
+- Answer directly and concisely (under 3 sentences for simple questions)
 - Use ONLY information from your tools - never guess or use outside knowledge
 - Focus on relevant details, ignore metadata (artist, prices, set info)
-- State the answer first, then explain if needed"""),
+- State the answer first, then explain if needed
+
+**CRITICAL - No Tool Results = No Answer:**
+If your tools return no useful information or errors, respond with:
+"I don't have enough information to answer that accurately. Please try asking about a specific card name or rules topic."
+DO NOT answer from memory or pre-training. ALWAYS use tools."""),
         ("placeholder", "{messages}"),
     ])
     

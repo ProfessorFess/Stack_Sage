@@ -12,7 +12,8 @@ from ragas.metrics import (
     FactualCorrectness,
     LLMContextRecall,
     ContextEntityRecall,
-    NoiseSensitivity
+    NoiseSensitivity,
+    ContextPrecision
 )
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
@@ -21,6 +22,8 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.messages import HumanMessage
 from backend.core.rag_pipeline import agent
 from backend.core.config import config
+import pandas as pd
+import numpy as np
 
 
 # Test dataset: diverse MTG questions covering all agent capabilities
@@ -268,6 +271,7 @@ def run_evaluation():
         ResponseRelevancy(llm=evaluator_llm, embeddings=evaluator_embeddings),
         ContextEntityRecall(llm=evaluator_llm),
         NoiseSensitivity(llm=evaluator_llm),
+        ContextPrecision(llm=evaluator_llm),
     ]
     
     print("\n📋 Metrics configured:")
@@ -345,7 +349,155 @@ def run_evaluation():
     return results
 
 
+def create_evaluation_table(results):
+    """
+    Create a comprehensive pandas table of evaluation results.
+    
+    Args:
+        results: Ragas evaluation results object
+        
+    Returns:
+        pandas.DataFrame: Formatted table with all metrics and analysis
+    """
+    # Convert results to pandas DataFrame
+    df = results.to_pandas()
+    
+    # Add question metadata
+    df['question_id'] = range(1, len(df) + 1)
+    df['difficulty'] = [q['difficulty'] for q in TEST_QUESTIONS]
+    df['question_short'] = [q['question'][:50] + '...' if len(q['question']) > 50 else q['question'] for q in TEST_QUESTIONS]
+    
+    # Reorder columns for better readability
+    metric_columns = [col for col in df.columns if col not in ['user_input', 'response', 'retrieved_contexts', 'reference', 'question_id', 'difficulty', 'question_short']]
+    
+    # Create main results table
+    results_table = df[['question_id', 'difficulty', 'question_short'] + metric_columns].copy()
+    
+    # Round numeric columns to 3 decimal places
+    for col in metric_columns:
+        if col in results_table.columns:
+            results_table[col] = results_table[col].round(3)
+    
+    # Add overall score column (average of all metrics)
+    results_table['overall_score'] = results_table[metric_columns].mean(axis=1).round(3)
+    
+    # Add quality category
+    def categorize_quality(score):
+        if score >= 0.7:
+            return 'High'
+        elif score >= 0.5:
+            return 'Medium'
+        else:
+            return 'Low'
+    
+    results_table['quality'] = results_table['overall_score'].apply(categorize_quality)
+    
+    return results_table
+
+
+def display_evaluation_summary(results_table):
+    """
+    Display a comprehensive summary of evaluation results.
+    """
+    print("\n" + "="*100)
+    print("📊 COMPREHENSIVE EVALUATION RESULTS TABLE")
+    print("="*100)
+    
+    # Display main results table
+    print("\n📋 DETAILED RESULTS BY QUESTION:")
+    print("-" * 100)
+    
+    # Configure pandas display options
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', 30)
+    
+    print(results_table.to_string(index=False))
+    
+    # Summary statistics
+    print("\n" + "="*100)
+    print("📈 SUMMARY STATISTICS")
+    print("="*100)
+    
+    metric_columns = [col for col in results_table.columns if col not in ['question_id', 'difficulty', 'question_short', 'overall_score', 'quality']]
+    
+    # Overall metrics summary
+    print("\n🎯 AGGREGATE METRICS:")
+    print("-" * 50)
+    for col in metric_columns:
+        if col in results_table.columns:
+            mean_score = results_table[col].mean()
+            std_score = results_table[col].std()
+            print(f"  {col:30s}: {mean_score:.3f} ± {std_score:.3f}")
+    
+    # Quality distribution
+    print(f"\n📊 QUALITY DISTRIBUTION:")
+    print("-" * 50)
+    quality_counts = results_table['quality'].value_counts()
+    total_questions = len(results_table)
+    
+    for quality, count in quality_counts.items():
+        percentage = (count / total_questions) * 100
+        print(f"  {quality:15s}: {count:2d} questions ({percentage:5.1f}%)")
+    
+    # Difficulty breakdown
+    print(f"\n🎚️  PERFORMANCE BY DIFFICULTY:")
+    print("-" * 50)
+    difficulty_stats = results_table.groupby('difficulty')['overall_score'].agg(['mean', 'std', 'count']).round(3)
+    
+    for difficulty in ['easy', 'medium', 'hard']:
+        if difficulty in difficulty_stats.index:
+            stats = difficulty_stats.loc[difficulty]
+            print(f"  {difficulty.capitalize():8s}: {stats['mean']:.3f} ± {stats['std']:.3f} ({int(stats['count'])} questions)")
+    
+    # Best and worst performing questions
+    print(f"\n🏆 TOP PERFORMING QUESTIONS:")
+    print("-" * 50)
+    top_3 = results_table.nlargest(3, 'overall_score')[['question_id', 'difficulty', 'overall_score', 'quality']]
+    for _, row in top_3.iterrows():
+        print(f"  Q{row['question_id']:2d} ({row['difficulty']:6s}): {row['overall_score']:.3f} - {row['quality']}")
+    
+    print(f"\n⚠️  NEEDS IMPROVEMENT:")
+    print("-" * 50)
+    bottom_3 = results_table.nsmallest(3, 'overall_score')[['question_id', 'difficulty', 'overall_score', 'quality']]
+    for _, row in bottom_3.iterrows():
+        print(f"  Q{row['question_id']:2d} ({row['difficulty']:6s}): {row['overall_score']:.3f} - {row['quality']}")
+    
+    # Metric correlation analysis
+    print(f"\n🔗 METRIC CORRELATIONS (with Overall Score):")
+    print("-" * 50)
+    correlations = results_table[metric_columns + ['overall_score']].corr()['overall_score'].drop('overall_score').sort_values(ascending=False)
+    
+    for metric, corr in correlations.items():
+        if not pd.isna(corr):
+            print(f"  {metric:30s}: {corr:.3f}")
+    
+    return results_table
+
+
+def save_results_to_csv(results_table, filename="evaluation_results.csv"):
+    """
+    Save evaluation results to CSV file.
+    
+    Args:
+        results_table: pandas DataFrame with results
+        filename: Output filename
+    """
+    try:
+        results_table.to_csv(filename, index=False)
+        print(f"\nResults saved to: {filename}")
+    except Exception as e:
+        print(f"\nError saving to CSV: {e}")
+
+
 if __name__ == "__main__":
     # Run the evaluation
     results = run_evaluation()
+    
+    # Create and display comprehensive table
+    results_table = create_evaluation_table(results)
+    display_evaluation_summary(results_table)
+    
+    # Save to CSV
+    save_results_to_csv(results_table)
 

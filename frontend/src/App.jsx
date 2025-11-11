@@ -368,21 +368,18 @@ function App() {
                 className={`mode-button ${mode === 'chat' ? 'active' : ''}`}
                 onClick={() => setMode('chat')}
               >
-                <span className="mode-icon">💬</span>
                 <span className="mode-label">Chat</span>
               </button>
               <button
                 className={`mode-button ${mode === 'search' ? 'active' : ''}`}
                 onClick={() => setMode('search')}
               >
-                <span className="mode-icon">🔍</span>
                 <span className="mode-label">Card Search</span>
               </button>
               <button
                 className={`mode-button ${mode === 'deck' ? 'active' : ''}`}
                 onClick={() => setMode('deck')}
               >
-                <span className="mode-icon">🃏</span>
                 <span className="mode-label">Deck Validator</span>
               </button>
             </div>

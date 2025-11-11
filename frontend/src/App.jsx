@@ -436,28 +436,70 @@ function App() {
               {/* Chat Messages */}
               {chatHistory.length > 0 && (
                 <div className="chat-messages">
-                  {chatHistory.map((message, index) => (
-                    <div 
-                      key={index} 
-                      className={`message ${message.type} fade-in`}
-                    >
-                      <div className="message-header">
-                        <span className="message-icon">
-                          {message.type === 'question' ? '🃏' : '📜'}
-                        </span>
-                        <span className="message-label">
-                          {message.type === 'question' ? 'Your Question' : 'Stack Sage'}
-                        </span>
-                      </div>
-                      <div className={`message-content ${message.success === false ? 'error' : ''}`}>
-                        {message.type === 'answer' ? (
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
-                        ) : (
-                          <p>{message.content}</p>
+                  {chatHistory.map((message, index) => {
+                    // Parse answer to separate content from metadata
+                    let mainContent = message.content;
+                    let toolsUsed = null;
+                    let totalTime = null;
+
+                    if (message.type === 'answer' && message.content) {
+                      // Extract tools used section
+                      const toolsMatch = message.content.match(/🔧\s*\*\*Tools Used\*\*:(.+?)(?=\n⏱️|\n---|$)/s);
+                      if (toolsMatch) {
+                        toolsUsed = toolsMatch[1].trim();
+                        mainContent = message.content.split(/─+\n🔧/)[0].split(/---\n🔧/)[0].trim();
+                      }
+
+                      // Extract timing information
+                      const timeMatch = message.content.match(/⏱️\s*\*\*Total Time\*\*:\s*([\d.]+s)/);
+                      if (timeMatch) {
+                        totalTime = timeMatch[1];
+                      }
+                    }
+
+                    return (
+                      <div 
+                        key={index} 
+                        className={`message ${message.type} fade-in`}
+                      >
+                        <div className="message-header">
+                          <span className="message-icon">
+                            {message.type === 'question' ? '🃏' : '📜'}
+                          </span>
+                          <span className="message-label">
+                            {message.type === 'question' ? 'Your Question' : 'Stack Sage'}
+                          </span>
+                        </div>
+                        <div className={`message-content ${message.success === false ? 'error' : ''}`}>
+                          {message.type === 'answer' ? (
+                            <ReactMarkdown>{mainContent}</ReactMarkdown>
+                          ) : (
+                            <p>{message.content}</p>
+                          )}
+                        </div>
+                        
+                        {/* Metadata section for answers */}
+                        {message.type === 'answer' && (toolsUsed || totalTime) && (
+                          <div className="message-metadata">
+                            {toolsUsed && (
+                              <div className="metadata-item">
+                                <span className="metadata-icon">🔧</span>
+                                <span className="metadata-label">Tools:</span>
+                                <span className="metadata-value">{toolsUsed}</span>
+                              </div>
+                            )}
+                            {totalTime && (
+                              <div className="metadata-item">
+                                <span className="metadata-icon">⏱️</span>
+                                <span className="metadata-label">Time:</span>
+                                <span className="metadata-value">{totalTime}</span>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={chatEndRef} />
                 </div>
               )}

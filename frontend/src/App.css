@@ -302,13 +302,14 @@
 .message {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
+  gap: 0.875rem;
+  padding: 1.75rem;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
-  background: linear-gradient(135deg, rgba(42, 47, 62, 0.6) 0%, rgba(36, 41, 54, 0.6) 100%);
+  background: linear-gradient(135deg, rgba(42, 47, 62, 0.7) 0%, rgba(36, 41, 54, 0.7) 100%);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
 }
 
 .message::before {
@@ -316,20 +317,21 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 0;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-  transition: height 0.3s ease;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .message:hover {
-  border-color: var(--border-hover);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(74, 158, 255, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   transform: translateY(-2px);
 }
 
 .message:hover::before {
-  height: 3px;
+  opacity: 1;
 }
 
 .message.question {
@@ -360,8 +362,10 @@
 
 .message-content {
   color: var(--text-primary);
-  line-height: 1.7;
+  line-height: 1.8;
   font-size: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .message-content.error {
@@ -369,11 +373,15 @@
 }
 
 .message-content p {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.25rem 0;
 }
 
 .message-content p:last-child {
   margin-bottom: 0;
+}
+
+.message-content p:first-child {
+  margin-top: 0;
 }
 
 .message-content ul,
@@ -402,6 +410,44 @@
   border: none;
   border-top: 1px solid var(--border-color);
   margin: 1rem 0;
+}
+
+/* Message Metadata Section */
+.message-metadata {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+  opacity: 0.85;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(74, 158, 255, 0.08);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(74, 158, 255, 0.15);
+}
+
+.metadata-icon {
+  font-size: 1rem;
+  filter: grayscale(0.2);
+}
+
+.metadata-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metadata-value {
+  color: var(--text-primary);
+  font-weight: 400;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
 }
 
 /* ==================== Loading ==================== */

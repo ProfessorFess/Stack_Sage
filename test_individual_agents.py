@@ -72,9 +72,9 @@ def test_card_agent():
             print(f"  - {card['name']}")
         
         if cards:
-            print("  ✅ Card agent working")
+            print("  Card agent working")
         else:
-            print("  ❌ No cards fetched")
+            print("  FAIL: No cards fetched")
     
     print("\n" + "="*80)
 
@@ -103,13 +103,13 @@ def test_rules_agent():
         print(f"Coverage score: {coverage:.2f}")
         
         if rules:
-            print("  ✅ Rules agent working")
+            print("  Rules agent working")
             # Show first rule snippet
             if rules[0].get("content"):
                 snippet = rules[0]["content"][:100]
                 print(f"  First rule: {snippet}...")
         else:
-            print("  ❌ No rules fetched")
+            print("  FAIL: No rules fetched")
     
     print("\n" + "="*80)
 
@@ -138,13 +138,13 @@ def test_interaction_agent():
     missing = result.get("diagnostics", {}).get("missing_context", [])
     
     if draft_answer:
-        print(f"✅ Generated answer ({len(draft_answer)} chars)")
+        print(f"Generated answer ({len(draft_answer)} chars)")
         print(f"Preview: {draft_answer[:150]}...")
     else:
-        print("❌ No answer generated")
+        print("FAIL: No answer generated")
     
     if missing:
-        print(f"⚠️  Missing context: {missing}")
+        print(f"Missing context: {missing}")
     
     print("\n" + "="*80)
 
@@ -168,9 +168,9 @@ def test_judge_agent():
     print(f"Controller OK: {judge_report.get('controller_ok', False)}")
     
     if judge_report.get('grounded'):
-        print("✅ Grounding verification working")
+        print("Grounded verification working")
     else:
-        print("❌ Grounding verification failed")
+        print("FAIL: Grounding verification failed")
     
     # Test 2: Controller logic
     print("\nTest 2: Controller logic")
@@ -187,10 +187,10 @@ def test_judge_agent():
     
     print(f"Controller OK: {judge_report.get('controller_ok', False)}")
     if judge_report.get('corrections'):
-        print("✅ Controller correction applied")
+        print("Controller correction applied")
         print(f"Correction: {judge_report['corrections'][:100]}...")
     else:
-        print("⚠️  No controller correction (might be OK if answer was correct)")
+        print("No controller correction (might be OK if answer was correct)")
     
     print("\n" + "="*80)
 
@@ -221,18 +221,18 @@ def test_full_pipeline():
     
     state = interaction_agent(state)
     has_answer = bool(state.get("draft_answer"))
-    print(f"5. Interaction Agent: {'✅' if has_answer else '❌'} answer generated")
+    print(f"5. Interaction Agent: {'answer generated' if has_answer else 'FAIL: answer generated'}")
     
     state = judge_agent(state)
     grounded = state.get("judge_report", {}).get("grounded", False)
-    print(f"6. Judge Agent: {'✅' if grounded else '❌'} grounded")
+    print(f"6. Judge Agent: {'grounded' if grounded else 'FAIL: grounded'}")
     
     final_answer = state.get("final_answer", "")
     if final_answer:
-        print(f"\n✅ Full pipeline working!")
+        print(f"\nFull pipeline working!")
         print(f"Answer preview: {final_answer[:150]}...")
     else:
-        print("\n❌ Pipeline failed to generate answer")
+        print("\nFAIL: Pipeline failed to generate answer")
     
     print("\n" + "="*80)
 
@@ -252,12 +252,12 @@ def main():
         test_full_pipeline()
         
         print("\n" + "="*80)
-        print("✅ ALL AGENT TESTS COMPLETE")
+        print("ALL AGENT TESTS COMPLETE")
         print("="*80 + "\n")
         
         return 0
     except Exception as e:
-        print(f"\n❌ ERROR: {e}")
+        print(f"\nERROR: {e}")
         import traceback
         traceback.print_exc()
         return 1

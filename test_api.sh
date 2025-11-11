@@ -40,10 +40,10 @@ test_endpoint() {
     body=$(echo "$response" | sed '$d')
     
     if [ "$http_code" -eq 200 ]; then
-        echo -e "${GREEN}✅ PASS${NC} (HTTP $http_code)"
+        echo -e "${GREEN} PASS${NC} (HTTP $http_code)"
         ((PASSED++))
     else
-        echo -e "${RED}❌ FAIL${NC} (HTTP $http_code)"
+        echo -e "${RED} FAIL${NC} (HTTP $http_code)"
         ((FAILED++))
     fi
     
@@ -56,9 +56,9 @@ test_endpoint() {
 # Check if server is running
 echo "Checking if API server is running..."
 if curl -s "$API_URL/health" > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ Server is running${NC}"
+    echo -e "${GREEN} Server is running${NC}"
 else
-    echo -e "${RED}❌ Server is not running${NC}"
+    echo -e "${RED} Server is not running${NC}"
     echo "Please start the server first:"
     echo "  python backend/api/server.py"
     exit 1
@@ -108,10 +108,10 @@ http_code=$(echo "$response" | tail -n1)
 body=$(echo "$response" | sed '$d')
 
 if [ "$http_code" -eq 200 ]; then
-    echo -e "${YELLOW}⚠️  PASS${NC} (HTTP $http_code) - May not have cached data"
+    echo -e "${YELLOW}  PASS${NC} (HTTP $http_code) - May not have cached data"
     ((PASSED++))
 else
-    echo -e "${RED}❌ FAIL${NC} (HTTP $http_code)"
+    echo -e "${RED} FAIL${NC} (HTTP $http_code)"
     ((FAILED++))
 fi
 echo "$body" | head -c 150

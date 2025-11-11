@@ -3,7 +3,7 @@ import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import './App.css'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 function App() {
   // UI Mode State
@@ -173,6 +173,8 @@ function App() {
         type: 'answer',
         content: response.data.answer,
         success: response.data.success,
+        tools_used: response.data.tools_used || [],
+        citations: response.data.citations || [],
         timestamp: new Date().toISOString()
       }
       setChatHistory(prev => [...prev, aiMessage])
@@ -410,8 +412,7 @@ function App() {
                   <h2 className="welcome-title">Welcome to Stack Sage</h2>
                   <p className="welcome-text">
                     Ask me anything about Magic: The Gathering rules, card interactions, 
-                    format legality, and more. I have access to the Comprehensive Rules 
-                    and the Scryfall database.
+                    format legality, and more.
                   </p>
                   
                   {examples.length > 0 && (
@@ -437,26 +438,6 @@ function App() {
               {chatHistory.length > 0 && (
                 <div className="chat-messages">
                   {chatHistory.map((message, index) => {
-                    // Parse answer to separate content from metadata
-                    let mainContent = message.content;
-                    let toolsUsed = null;
-                    let totalTime = null;
-
-                    if (message.type === 'answer' && message.content) {
-                      // Extract tools used section
-                      const toolsMatch = message.content.match(/🔧\s*\*\*Tools Used\*\*:(.+?)(?=\n⏱️|\n---|$)/s);
-                      if (toolsMatch) {
-                        toolsUsed = toolsMatch[1].trim();
-                        mainContent = message.content.split(/─+\n🔧/)[0].split(/---\n🔧/)[0].trim();
-                      }
-
-                      // Extract timing information
-                      const timeMatch = message.content.match(/⏱️\s*\*\*Total Time\*\*:\s*([\d.]+s)/);
-                      if (timeMatch) {
-                        totalTime = timeMatch[1];
-                      }
-                    }
-
                     return (
                       <div 
                         key={index} 
@@ -472,27 +453,27 @@ function App() {
                         </div>
                         <div className={`message-content ${message.success === false ? 'error' : ''}`}>
                           {message.type === 'answer' ? (
-                            <ReactMarkdown>{mainContent}</ReactMarkdown>
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
                           ) : (
                             <p>{message.content}</p>
                           )}
                         </div>
                         
                         {/* Metadata section for answers */}
-                        {message.type === 'answer' && (toolsUsed || totalTime) && (
+                        {message.type === 'answer' && (message.tools_used?.length > 0 || message.citations?.length > 0) && (
                           <div className="message-metadata">
-                            {toolsUsed && (
+                            {message.tools_used && message.tools_used.length > 0 && (
                               <div className="metadata-item">
                                 <span className="metadata-icon">🔧</span>
                                 <span className="metadata-label">Tools:</span>
-                                <span className="metadata-value">{toolsUsed}</span>
+                                <span className="metadata-value">{message.tools_used.join(', ')}</span>
                               </div>
                             )}
-                            {totalTime && (
+                            {message.citations && message.citations.length > 0 && (
                               <div className="metadata-item">
-                                <span className="metadata-icon">⏱️</span>
-                                <span className="metadata-label">Time:</span>
-                                <span className="metadata-value">{totalTime}</span>
+                                <span className="metadata-icon">📚</span>
+                                <span className="metadata-label">Citations:</span>
+                                <span className="metadata-value">{message.citations.length} source(s)</span>
                               </div>
                             )}
                           </div>

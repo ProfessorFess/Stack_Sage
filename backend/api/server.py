@@ -4,17 +4,18 @@ Stack Sage FastAPI Server
 A simple, elegant API for the Magic: The Gathering rules assistant.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
-import sys
 import os
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
-from backend.core.multi_agent_graph import invoke_graph
+from backend.core.multi_agent_graph import invoke_graph, invoke_graph_streaming
 from backend.core.deck_validator import DeckValidator
 from backend.core.deck_models import Deck, DeckCard
 
@@ -25,10 +26,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Setup rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Enable CORS for local development
+cors_origins = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vite default port
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +45,16 @@ app.add_middleware(
 # Request/Response models
 class QuestionRequest(BaseModel):
     question: str
+    
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Question cannot be empty")
+        if len(v) > 2000:
+            raise ValueError("Question too long (max 2000 chars)")
+        return v
     
     class Config:
         json_schema_extra = {
@@ -51,6 +68,8 @@ class AnswerResponse(BaseModel):
     question: str
     answer: str
     success: bool
+    tools_used: Optional[List[str]] = None
+    citations: Optional[List[str]] = None
 
 
 class HealthResponse(BaseModel):
@@ -137,7 +156,8 @@ async def health():
 
 
 @app.post("/ask", response_model=AnswerResponse)
-async def ask_question(request: QuestionRequest):
+@limiter.limit("10/minute")
+async def ask_question(question_request: QuestionRequest, request: Request):
     """
     Ask Stack Sage a question about Magic: The Gathering rules.
     
@@ -147,18 +167,30 @@ async def ask_question(request: QuestionRequest):
     - Each agent focuses on their expertise area
     - The system provides accurate, verified answers
     """
-    if not request.question or not request.question.strip():
+    if not question_request.question or not question_request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
     
     try:
         # Process the question through the Multi-Agent Graph
-        result = invoke_graph(request.question.strip())
+        result = invoke_graph(question_request.question.strip())
         answer = result.get("response", "I couldn't generate an answer.")
         
+        # Convert citation objects to strings
+        citations = result.get("citations", [])
+        citation_strings = []
+        for citation in citations:
+            if isinstance(citation, dict):
+                # Format: "Card: Lightning Bolt" or "Rule: 702.66"
+                citation_strings.append(f"{citation.get('type', 'source').title()}: {citation.get('id', 'Unknown')}")
+            else:
+                citation_strings.append(str(citation))
+        
         return {
-            "question": request.question.strip(),
+            "question": question_request.question.strip(),
             "answer": answer,
-            "success": True
+            "success": True,
+            "tools_used": result.get("tools_used", []),
+            "citations": citation_strings
         }
     
     except Exception as e:
@@ -167,10 +199,35 @@ async def ask_question(request: QuestionRequest):
         
         # Return a user-friendly error
         return {
-            "question": request.question.strip(),
-            "answer": f"I encountered an error processing your question: {str(e)}\n\nPlease try rephrasing your question or ask something else.",
-            "success": False
+            "question": question_request.question.strip(),
+            "answer": "I encountered an error processing your question. Please try again shortly.",
+            "success": False,
+            "tools_used": [],
+            "citations": []
         }
+
+
+@app.post("/ask/stream")
+@limiter.limit("10/minute")
+async def ask_stream(question_request: QuestionRequest, request: Request):
+    """
+    Ask Stack Sage a question and stream the answer in real-time using Server-Sent Events.
+    
+    Uses the same multi-agent system as /ask but streams the final answer as it's generated.
+    """
+    if not question_request.question or not question_request.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    
+    async def generate():
+        try:
+            # Stream answer chunks
+            for chunk in invoke_graph_streaming(question_request.question.strip()):
+                yield f"data: {chunk}\n\n"
+        except Exception as e:
+            print(f"Error streaming answer: {str(e)}")
+            yield f"data: Error processing question\n\n"
+    
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 
 # Example questions endpoint for the frontend

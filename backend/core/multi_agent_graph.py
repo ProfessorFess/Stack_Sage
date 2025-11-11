@@ -213,7 +213,11 @@ def route_after_rules(state: AgentState) -> str:
     # Check if we need cards
     if "cards" in task_plan:
         cards_in_context = state.get("context", {}).get("cards", [])
-        if not cards_in_context:
+        # Add loop detection: don't go back to cards if we've already tried multiple times
+        tools_used = state.get("tools_used", [])
+        card_agent_calls = sum(1 for tool in tools_used if "card" in tool.lower())
+        
+        if not cards_in_context and card_agent_calls < 3:
             return "cards"
     
     # Go to interaction if in plan
@@ -370,11 +374,11 @@ def invoke_graph(question: str) -> Dict[str, Any]:
     # Initialize state
     initial_state = initialize_state(question)
     
-    # Invoke graph with recursion limit
+    # Invoke graph with recursion limit (increased for complex queries)
     try:
         result = multi_agent_graph.invoke(
             initial_state,
-            config={"recursion_limit": 15}
+            config={"recursion_limit": 50}
         )
         
         return {
@@ -392,6 +396,44 @@ def invoke_graph(question: str) -> Dict[str, Any]:
             "citations": [],
             "diagnostics": {}
         }
+
+
+def invoke_graph_streaming(question: str):
+    """
+    Invoke the multi-agent graph and stream the final answer token by token.
+    
+    Args:
+        question: User's question
+        
+    Yields:
+        Text chunks of the final answer
+    """
+    if VERBOSE_LOGGING:
+        print(f"\n{'='*60}")
+        print(f"[MultiAgentGraph] Processing question (streaming): {question}")
+        print(f"{'='*60}\n")
+    
+    # Initialize state
+    initial_state = initialize_state(question)
+    
+    # Invoke graph with recursion limit (increased for complex queries)
+    try:
+        result = multi_agent_graph.invoke(
+            initial_state,
+            config={"recursion_limit": 50}
+        )
+        
+        # Stream the final answer in chunks
+        final_answer = result.get("final_answer", "No answer generated")
+        
+        # Chunk size for streaming (characters per chunk)
+        chunk_size = 10
+        for i in range(0, len(final_answer), chunk_size):
+            yield final_answer[i:i+chunk_size]
+        
+    except Exception as e:
+        print(f"[MultiAgentGraph] Error: {e}")
+        yield f"Error processing question: {str(e)}"
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ from backend.core.agent_state import AgentState, add_missing_context, add_tool_u
 from backend.core.agents.card_agent import format_card_context_for_llm
 from backend.core.agents.rules_agent import format_rules_context_for_llm
 from backend.core.llm_client import get_shared_llm
+from backend.core.config import config
 
 
 def interaction_agent(state: AgentState) -> AgentState:
@@ -49,7 +50,7 @@ def interaction_agent(state: AgentState) -> AgentState:
         combined_context += rules_context + "\n\n"
     
     # Use shared LLM instance for better performance
-    llm = get_shared_llm(temperature=0.1)  # Low temperature for consistency
+    llm = get_shared_llm(temperature=config.AGENT_TEMPERATURES["interaction"])
     
     # Create prompt
     prompt = ChatPromptTemplate.from_messages([

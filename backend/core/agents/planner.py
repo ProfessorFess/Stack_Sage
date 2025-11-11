@@ -15,6 +15,7 @@ from typing import List, Dict, Any
 from langchain_core.prompts import ChatPromptTemplate
 from backend.core.agent_state import AgentState, add_tool_used
 from backend.core.llm_client import get_shared_llm
+from backend.core.config import config
 
 
 def planner_agent(state: AgentState) -> AgentState:
@@ -102,7 +103,7 @@ def _analyze_question_with_llm(question: str) -> Dict[str, Any]:
     Returns:
         Dictionary with 'card_names' (list) and 'intent' (string)
     """
-    llm = get_shared_llm(temperature=0.0)  # Deterministic for classification
+    llm = get_shared_llm(temperature=config.AGENT_TEMPERATURES["planner"])
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert at analyzing Magic: The Gathering questions.

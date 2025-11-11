@@ -54,7 +54,7 @@ class MTGVectorStore:
         
         # Initialize Qdrant client
         if use_local:
-            storage_path = Path(__file__).parent.parent / "data" / "qdrant_storage"
+            storage_path = Path(config.QDRANT_PATH)
             storage_path.mkdir(parents=True, exist_ok=True)
             self.client = QdrantClient(path=str(storage_path))
             print(f"📂 Using local Qdrant at: {storage_path}")

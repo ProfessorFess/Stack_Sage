@@ -112,22 +112,29 @@ def _verify_grounding(answer: str, context: Dict[str, Any]) -> Tuple[bool, str]:
     
     answer_lower = answer.lower()
     
-    # Extract potential card names from answer (capitalized words)
-    card_name_pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b'
+    # Extract potential card names from answer (capitalized words followed by MTG action verbs)
+    card_name_pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s+(?:is|has|can|will|would|enters|leaves|triggers|creates|deals|gains|loses|taps|untaps|sacrifices|exiles|draws|discards|reveals|searches|shuffles|puts|returns|destroys|counters|copies|targets)'
     card_names_in_answer = re.findall(card_name_pattern, answer)
     
     # Check if card names mentioned in answer exist in context
     suspicious_cards = []
-    for card_name in card_names_in_answer[:5]:  # Check first 5
-        if card_name.lower() not in all_context:
-            # Skip common words
-            if card_name.lower() not in ['the', 'you', 'your', 'when', 'this', 'that', 'player', 'card']:
-                suspicious_cards.append(card_name)
+    skip_words = ['when', 'since', 'if', 'the', 'you', 'your', 'this', 'that', 'player', 'card', 'it', 'they', 'each', 'any', 'all', 'as', 'while']
     
-    if len(suspicious_cards) >= 2:
-        return (False, f"Suspicious card names not in context: {suspicious_cards[:2]}")
+    for card_name in card_names_in_answer[:10]:  # Check more candidates
+        # Skip common phrases and sentence starters
+        first_word = card_name.lower().split()[0]
+        if first_word in skip_words:
+            continue
+        
+        if card_name.lower() not in all_context:
+            suspicious_cards.append(card_name)
+    
+    # Only fail if we find many suspicious card names (relaxed threshold)
+    if len(suspicious_cards) >= 3:
+        return (False, f"Suspicious card names not in context: {suspicious_cards[:3]}")
     
     # Check for specific numbers (power/toughness, damage) in answer
+    # Only flag if multiple numbers are suspicious (LLM can correctly infer some P/T)
     number_pattern = r'\b(\d+/\d+)\b'
     numbers_in_answer = re.findall(number_pattern, answer)
     
@@ -136,8 +143,9 @@ def _verify_grounding(answer: str, context: Dict[str, Any]) -> Tuple[bool, str]:
         if number not in all_context:
             suspicious_numbers.append(number)
     
-    if suspicious_numbers:
-        return (False, f"Specific numbers not in context: {suspicious_numbers[:2]}")
+    # Only fail if multiple suspicious numbers (relaxed - LLM can infer copy effects)
+    if len(suspicious_numbers) >= 3:
+        return (False, f"Specific numbers not in context: {suspicious_numbers[:3]}")
     
     # Basic length check - very short context with long answer is suspicious
     context_length = len(all_context)

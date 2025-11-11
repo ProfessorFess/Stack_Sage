@@ -46,14 +46,24 @@ class Config:
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.5"))
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "2000"))
     
+    # Agent-specific temperatures for deterministic behavior
+    AGENT_TEMPERATURES = {
+        "planner": 0.0,      # Deterministic classification
+        "card": 0.1,         # Mostly deterministic lookups
+        "rules": 0.1,        # Precise rule retrieval
+        "interaction": 0.2,  # Low creativity for accuracy
+        "judge": 0.1,        # Strict interpretation
+        "meta": 0.3,         # Slight flexibility for trends
+    }
+    
     # ============================================
-    # ChromaDB Configuration
+    # Qdrant Configuration
     # ============================================
-    CHROMA_PERSIST_DIRECTORY: str = os.getenv(
-        "CHROMA_PERSIST_DIRECTORY",
-        str(Path(__file__).parent.parent / "data" / "chroma_db")
+    QDRANT_PATH: str = os.getenv(
+        "QDRANT_PATH",
+        str(Path(__file__).parent.parent / "data" / "qdrant_storage")
     )
-    CHROMA_COLLECTION_NAME: str = os.getenv("CHROMA_COLLECTION_NAME", "mtg_rules")
+    QDRANT_COLLECTION_NAME: str = os.getenv("QDRANT_COLLECTION_NAME", "mtg_rules")
     
     # ============================================
     # Logging

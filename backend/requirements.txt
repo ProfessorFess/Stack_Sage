@@ -24,7 +24,8 @@ sentence-transformers==3.3.1  # For free local embeddings
 # RAG evaluation
 ragas==0.3.7
 
-# API framework (future)
-# fastapi==0.115.6
-# uvicorn==0.34.0
+# API framework
+fastapi==0.115.6
+uvicorn==0.34.0
+slowapi==0.1.9
 

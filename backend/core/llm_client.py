@@ -107,6 +107,43 @@ def create_llm_client() -> MTGLLMClient:
     return MTGLLMClient()
 
 
+# Shared LLM instance cache for multi-agent system
+_shared_llm_cache = {}
+
+def get_shared_llm(temperature: float = None, model: str = None):
+    """
+    Get a shared LLM instance for the multi-agent system.
+    
+    This function caches LLM instances to avoid recreating them repeatedly,
+    which improves performance and reduces initialization overhead.
+    
+    Args:
+        temperature: Temperature for generation (defaults to config)
+        model: Model to use (defaults to config)
+        
+    Returns:
+        ChatOpenAI instance
+    """
+    # Use defaults if not specified
+    if temperature is None:
+        temperature = config.LLM_TEMPERATURE
+    if model is None:
+        model = config.LLM_MODEL
+    
+    # Create cache key
+    cache_key = f"{model}_{temperature}"
+    
+    # Return cached instance if available
+    if cache_key not in _shared_llm_cache:
+        _shared_llm_cache[cache_key] = ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            openai_api_key=config.OPENAI_API_KEY
+        )
+    
+    return _shared_llm_cache[cache_key]
+
+
 # Example usage
 if __name__ == "__main__":
     print("=" * 60)

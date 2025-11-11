@@ -29,8 +29,12 @@ def card_agent(state: AgentState) -> AgentState:
     """
     question = state.get("user_question", "")
     
-    # Extract card names from question
-    card_names = extract_card_names(question)
+    # Check if Planner already extracted card names
+    card_names = state.get("extracted_cards", [])
+    
+    # If not, extract from question ourselves
+    if not card_names:
+        card_names = extract_card_names(question)
     
     if not card_names:
         print("[CardAgent] No card names detected in question")

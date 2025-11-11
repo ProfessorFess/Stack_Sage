@@ -7,14 +7,16 @@ A simple, elegant API for the Magic: The Gathering rules assistant.
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 import sys
 import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from backend.core.rag_pipeline import graph
+from backend.core.multi_agent_graph import invoke_graph
+from backend.core.deck_validator import DeckValidator
+from backend.core.deck_models import Deck, DeckCard
 
 # Create FastAPI app
 app = FastAPI(
@@ -56,6 +58,65 @@ class HealthResponse(BaseModel):
     message: str
 
 
+class DeckValidateRequest(BaseModel):
+    decklist: str
+    format: str
+    commander: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "decklist": "4 Lightning Bolt\n4 Monastery Swiftspear\n52 Mountain",
+                "format": "modern",
+                "commander": None
+            }
+        }
+
+
+class DeckValidateResponse(BaseModel):
+    is_legal: bool
+    format: str
+    total_cards: int
+    errors: List[str]
+    warnings: List[str]
+
+
+class CardSearchRequest(BaseModel):
+    # Primary search field
+    card_name: Optional[str] = None
+    
+    # Advanced filters (optional)
+    colors: Optional[str] = None
+    mana_value: Optional[str] = None
+    mana_cost: Optional[str] = None
+    power: Optional[str] = None
+    toughness: Optional[str] = None
+    format_legal: Optional[str] = None
+    card_type: Optional[str] = None
+    keywords: Optional[str] = None
+    text: Optional[str] = None
+    rarity: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "card_name": "Lightning Bolt",
+                "colors": "r",
+                "mana_value": "3",
+                "power": "3",
+                "card_type": "creature",
+                "format_legal": "standard"
+            }
+        }
+
+
+class CardSearchResponse(BaseModel):
+    total_cards: int
+    query: str
+    cards: List[dict]
+    success: bool
+
+
 # Routes
 @app.get("/", response_model=HealthResponse)
 async def root():
@@ -80,15 +141,18 @@ async def ask_question(request: QuestionRequest):
     """
     Ask Stack Sage a question about Magic: The Gathering rules.
     
-    The AI assistant will use its tools to search rules, look up cards,
-    check format legality, and more to provide accurate answers.
+    Uses an intelligent multi-agent system where:
+    - A Planner agent analyzes your question using AI
+    - Specialist agents (Cards, Rules, Interaction, Judge, Meta) are routed to dynamically
+    - Each agent focuses on their expertise area
+    - The system provides accurate, verified answers
     """
     if not request.question or not request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
     
     try:
-        # Process the question through the RAG pipeline
-        result = graph.invoke({"question": request.question.strip()})
+        # Process the question through the Multi-Agent Graph
+        result = invoke_graph(request.question.strip())
         answer = result.get("response", "I couldn't generate an answer.")
         
         return {
@@ -127,12 +191,221 @@ async def get_examples():
     }
 
 
+@app.post("/validate-deck", response_model=DeckValidateResponse)
+async def validate_deck(request: DeckValidateRequest):
+    """
+    Validate an MTG deck for format legality.
+    
+    Accepts a decklist in text format (e.g., "4 Lightning Bolt") and validates
+    it according to the specified format rules.
+    """
+    if not request.decklist or not request.decklist.strip():
+        raise HTTPException(status_code=400, detail="Decklist cannot be empty")
+    
+    if not request.format or not request.format.strip():
+        raise HTTPException(status_code=400, detail="Format must be specified")
+    
+    try:
+        # Parse the decklist
+        mainboard = []
+        lines = request.decklist.strip().split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('#') or line.startswith('//'):
+                continue
+            
+            # Parse format: "4 Card Name" or "Card Name"
+            parts = line.split(' ', 1)
+            if len(parts) == 2 and parts[0].isdigit():
+                quantity = int(parts[0])
+                card_name = parts[1].strip()
+            else:
+                quantity = 1
+                card_name = line
+            
+            if card_name:
+                mainboard.append(DeckCard(name=card_name, quantity=quantity))
+        
+        if not mainboard:
+            raise HTTPException(status_code=400, detail="No valid cards found in decklist")
+        
+        # Create deck object
+        deck = Deck(
+            name="User Deck",
+            format=request.format.strip(),
+            mainboard=mainboard,
+            sideboard=[],
+            commander=request.commander
+        )
+        
+        # Validate the deck
+        validator = DeckValidator()
+        result = validator.validate(deck)
+        
+        return {
+            "is_legal": result.is_legal,
+            "format": result.format,
+            "total_cards": result.total_cards,
+            "errors": result.errors,
+            "warnings": result.warnings
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error validating deck: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error validating deck: {str(e)}")
+
+
+@app.post("/search-cards", response_model=CardSearchResponse)
+async def search_cards(request: CardSearchRequest):
+    """
+    Search for MTG cards using advanced criteria.
+    
+    Search by colors, mana cost, power/toughness, card type, format legality,
+    keywords, oracle text, and rarity.
+    """
+    try:
+        # Import scryfall here to avoid circular imports
+        from backend.core.scryfall import ScryfallAPI
+        
+        scryfall = ScryfallAPI()
+        
+        # Build Scryfall search query
+        query_parts = []
+        
+        # Debug logging
+        print(f"[DEBUG] Received request - card_name: '{request.card_name}', colors: '{request.colors}'")
+        
+        # Primary search: Card name (fuzzy search)
+        if request.card_name and request.card_name.strip():
+            # Use Scryfall's fuzzy name search
+            card_name_query = f'name:"{request.card_name.strip()}"'
+            query_parts.append(card_name_query)
+            print(f"[DEBUG] Added card name query: {card_name_query}")
+        
+        # Advanced filters
+        if request.colors:
+            query_parts.append(f"c:{request.colors}")
+        if request.mana_value:
+            mv = request.mana_value
+            query_parts.append(f"mv{mv}" if any(op in mv for op in ['<', '>', '=']) else f"mv={mv}")
+        if request.mana_cost:
+            query_parts.append(f"m:{request.mana_cost}")
+        if request.power:
+            pow_val = request.power
+            query_parts.append(f"pow{pow_val}" if any(op in pow_val for op in ['<', '>', '=']) else f"pow={pow_val}")
+        if request.toughness:
+            tou_val = request.toughness
+            query_parts.append(f"tou{tou_val}" if any(op in tou_val for op in ['<', '>', '=']) else f"tou={tou_val}")
+        if request.format_legal:
+            query_parts.append(f"f:{request.format_legal}")
+        if request.card_type:
+            query_parts.append(f"t:{request.card_type}")
+        if request.keywords:
+            query_parts.append(f"o:{request.keywords}")
+        if request.text:
+            query_parts.append(f'o:"{request.text}"')
+        if request.rarity:
+            query_parts.append(f"r:{request.rarity}")
+        
+        if not query_parts:
+            print(f"[DEBUG] No query parts generated! Full request: {request.dict()}")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Please provide at least one search criterion. Received: card_name='{request.card_name}'"
+            )
+        
+        # Join query parts
+        search_query = " ".join(query_parts)
+        
+        # Determine ordering
+        if request.format_legal and request.format_legal.lower() in ['standard', 'pioneer', 'modern']:
+            order = 'released'
+        else:
+            order = 'edhrec'
+        
+        # Make API call to Scryfall
+        url = f"{scryfall.BASE_URL}/cards/search"
+        params = {
+            'q': search_query,
+            'order': order,
+            'unique': 'cards',
+            'dir': 'desc'
+        }
+        
+        response = scryfall.session.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        total_cards = data.get('total_cards', 0)
+        
+        if total_cards == 0:
+            return {
+                "total_cards": 0,
+                "query": search_query,
+                "cards": [],
+                "success": True
+            }
+        
+        # Get top results (limit to 20)
+        cards_data = data.get('data', [])[:20]
+        
+        # Validate format legality if specified
+        if request.format_legal:
+            validated_cards = []
+            for card_data in cards_data:
+                legalities = card_data.get('legalities', {})
+                card_legal = legalities.get(request.format_legal.lower(), 'not_legal')
+                
+                if card_legal == 'legal':
+                    validated_cards.append(card_data)
+            
+            cards_data = validated_cards
+        
+        # Format cards for response
+        formatted_cards = []
+        for card_data in cards_data:
+            card_info = {
+                "name": card_data.get('name', 'Unknown'),
+                "mana_cost": card_data.get('mana_cost', ''),
+                "type_line": card_data.get('type_line', ''),
+                "oracle_text": card_data.get('oracle_text', ''),
+                "power": card_data.get('power'),
+                "toughness": card_data.get('toughness'),
+                "image_url": card_data.get('image_uris', {}).get('normal', ''),
+                "scryfall_url": card_data.get('scryfall_uri', ''),
+                "rarity": card_data.get('rarity', ''),
+                "set_name": card_data.get('set_name', ''),
+                "collector_number": card_data.get('collector_number', '')
+            }
+            formatted_cards.append(card_info)
+        
+        return {
+            "total_cards": total_cards,
+            "query": search_query,
+            "cards": formatted_cards,
+            "success": True
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error searching cards: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error searching cards: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     
     print("=" * 60)
     print("📘 Starting Stack Sage API Server")
     print("=" * 60)
+    print("\n🧠 Multi-Agent System Active:")
+    print("   • AI-Powered Planner for intelligent routing")
+    print("   • Specialist agents: Card, Rules, Interaction, Judge, Meta")
+    print("   • Dynamic agent selection based on question analysis")
     print("\n🚀 Server will run on http://localhost:8000")
     print("📖 API docs available at http://localhost:8000/docs")
     print("\nPress CTRL+C to stop the server\n")
